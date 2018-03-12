@@ -1,0 +1,65 @@
+﻿@using SQLitePCL
+
+<div class="row">
+    <div class="col-sm-4 col-md-3 col-lg-3 pull-left">
+        <div class="list-group ">
+            <span href="#" class="list-group-item active">
+                Menu
+            </span>
+            <form>
+            <div class="col-md-12 list-group-item">
+               
+                    <label>
+                        <input type="radio" value="useButtons" name="radio" class="select-control" checked> <h4 class="label-text">Use Rudio Buttons</h4>
+                    </label>
+                    
+                    <div class="form-check">
+                        <label class="toggle label-radiobtn">
+                            <input type="radio" value="200" name="toggle" class="select-toggle" checked> <span class="label-text">200</span>
+                        </label>
+
+                        <label class="toggle label-radiobtn">
+                            <input type="radio" value="230" name="toggle" class="select-toggle"> <span class="label-text">230</span>
+                        </label>
+
+                        <label class="toggle label-radiobtn">
+                            <input type="radio" value="576" name="toggle" class="select-toggle"> <span class="label-text">576</span>
+                        </label>
+
+                        <label class="toggle label-radiobtn">
+                            <input type="radio" value="720" name="toggle" class="select-toggle"> <span class="label-text">720</span>
+                        </label>
+                    </div>
+               
+            </div>
+            <div class="col-md-12 list-group-item ">
+                <div>
+                    <label>
+                        <input type="radio" value="useSlider" name="radio" class="select-control"> <h4 class="label-text">Use Slider</h4>
+                    </label>
+                </div>
+                <div>
+                    <a href="#">
+                        <input id="ex13" data-slider-step="2" data-slider-min="0" type="text"/>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-md-12 list-group-item ">
+                <select class="selectpicker" data-live-search="true"></select>
+                <button type="button" id="update-assets" class="btn btn-info">Update</button>
+            </div>
+            
+                <div class="col-md-12 list-group-item ">
+                    <label class="add-seasonality" id="seasonality">
+                        <input id="seasonality-chk" type="checkbox" name="check"> <h4 class="label-text">Add Seasonality</h4>
+                    </label>
+                </div>
+                
+            <div class="list-group-item col-md-12">
+                <button type="button" id="make-forecast" class="btn btn-primary">FORECAST!</button>
+            </div>
+            </form>
+        </div>          
+    </div>
+</div>

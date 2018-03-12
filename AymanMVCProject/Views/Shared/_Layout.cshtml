@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AymanMVCProject</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-select/dist/css/bootstrap-select.css"/>
+    <link rel="stylesheet" href="~/lib/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css" />
+    <link rel="stylesheet" href="~/lib/components-font-awesome/css/fontawesome-all.css"/>
+
+</head>
+    
+<body>
+<div id="overlay"></div>
+<div class="loader"></div>
+<div class="fluid-container body-content">
+    @RenderBody()
+    <hr/>
+    <footer>
+        <p>&copy; 2018 - Ayman Project</p>
+    </footer>
+</div>
+
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+<script src="~/lib/bootstrap-select/dist/js/bootstrap-select.js"></script>
+<script src="~/lib/seiyria-bootstrap-slider/dist/bootstrap-slider.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+<script src="~/js/utils.js" asp-append-version="true"></script>
+
+@RenderSection("Scripts", required: false)
+</body>
+</html>

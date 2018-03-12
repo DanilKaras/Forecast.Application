@@ -1,0 +1,21 @@
+﻿<Properties StartupConfiguration="{4E1BA9A8-9668-42AE-A84E-D2550BB747BD}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="AymanMVCProject/wwwroot/js/site.js">
+    <Files>
+      <File FileName="AymanMVCProject/Views/Home/Index.cshtml" Line="10" Column="17" />
+      <File FileName="AymanMVCProject/Views/Shared/_Layout.cshtml" Line="23" Column="4" />
+      <File FileName="AymanMVCProject/wwwroot/js/site.js" Line="5" Column="36" />
+      <File FileName="DataCoin/Logic.cs" Line="25" Column="41" />
+      <File FileName="DataCoin/Models/AssetModel.cs" Line="36" Column="1" />
+      <File FileName="DataCoin/Utility/LoadData.cs" Line="50" Column="41" />
+      <File FileName="DataCoin/app.config" Line="6" Column="5" />
+      <File FileName="AymanMVCProject/wwwroot/css/site.css" Line="38" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.AymanMVCProject PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+</Properties>
