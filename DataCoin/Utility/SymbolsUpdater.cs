@@ -51,7 +51,7 @@ namespace DataCoin.Utility
         
         public List<string> ReadSymbolsFromFile()
         {
-            string readText = File.ReadAllText(filePath);
+            var readText = File.ReadAllText(filePath);
             var strArray = readText.Split(',').ToList();
             return strArray;
         }

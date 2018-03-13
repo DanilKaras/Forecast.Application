@@ -561,6 +561,9 @@
             </e>
           </e>
         </e>
+        <e p="Operations" t="Include">
+          <e p="CoreOperations.cs" t="Include" />
+        </e>
         <e p="Utility" t="Include">
           <e p="LoadData.cs" t="Include" />
           <e p="StaticUtility.cs" t="Include" />

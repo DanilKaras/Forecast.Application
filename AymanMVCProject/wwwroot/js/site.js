@@ -73,6 +73,11 @@ $('#make-forecast').click(function () {
     })
 });
 
+$('#custom-slider:text').on('input', function(){
+    var $val = this.value;
+    $('#ex13').slider('setValue', $val);
+});
+
 var bindSelect = function () {
     $.ajax({
         url: utils.domain + '/SymbolsList',

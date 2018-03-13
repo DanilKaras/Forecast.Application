@@ -28,7 +28,7 @@ namespace DataCoin
         public void GenerateCsvFile()
         {
             var coinHistory = new LoadData(_services, symbolId, period);
-            coinHistory.LoadHistory();
+            coinHistory.UploadHistoryFromServer();
             coinHistory.LoadToCsv(path);
         }
 

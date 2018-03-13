@@ -13,7 +13,7 @@
                         <input type="radio" value="useButtons" name="radio" class="select-control" checked> <h4 class="label-text">Use Rudio Buttons</h4>
                     </label>
                     
-                    <div class="form-check">
+                    <div >
                         <label class="toggle label-radiobtn">
                             <input type="radio" value="200" name="toggle" class="select-toggle" checked> <span class="label-text">200</span>
                         </label>
@@ -32,23 +32,28 @@
                     </div>
                
             </div>
-            <div class="col-md-12 list-group-item ">
-                <div>
-                    <label>
-                        <input type="radio" value="useSlider" name="radio" class="select-control"> <h4 class="label-text">Use Slider</h4>
-                    </label>
-                </div>
-                <div>
-                    <a href="#">
+                <div class="col-md-12 list-group-item">
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            <label>
+                                <input type="radio" value="useSlider" name="radio" class="select-control"> <h4 class="label-text">Use Slider</h4>
+                            </label>
+                        </div>
+                        <div class="col-md-3 col-md-offset-3">
+                            <input type="text" class="form-control pull-right" id="custom-slider">
+                        </div>
+                    </div>
+                    <div class="margin-top10">
                         <input id="ex13" data-slider-step="2" data-slider-min="0" type="text"/>
-                    </a>
+                    </div>
                 </div>
-            </div>
             
-            <div class="col-md-12 list-group-item ">
-                <select class="selectpicker" data-live-search="true"></select>
-                <button type="button" id="update-assets" class="btn btn-info">Update</button>
-            </div>
+                <div class="col-md-12 list-group-item">
+                    <div class="input-group">
+                    <select class="selectpicker" data-live-search="true"></select>
+                        <span class="input-group-btn"><button type="button" id="update-assets" class="btn btn-info">Update</button></span>
+                    </div>
+                </div>
             
                 <div class="col-md-12 list-group-item ">
                     <label class="add-seasonality" id="seasonality">
