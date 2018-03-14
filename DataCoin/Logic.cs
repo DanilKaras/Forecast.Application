@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AymanMVCProject.Models;
+using DataCoin.Operations;
 using DataCoin.Utility;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -24,6 +25,13 @@ namespace DataCoin
         {
             _services = services;
         }
+
+
+        public Logic(IOptions<ApplicationSettings> services, int period)
+        {
+            _services = services;
+            this.period = period;
+        }
         
         public void GenerateCsvFile()
         {
@@ -38,10 +46,16 @@ namespace DataCoin
             assets.UpdateAssetsInFile();
         }
 
-        public List<string> GetAllSymbols()
+        public IEnumerable<string> GetAllSymbols()
         {
             var assets = new SymbolsUpdater(_services);
             return assets.ReadSymbolsFromFile();
+        }
+
+        public void PythonExecutor()
+        {
+            var python = new PythonExec(_services, period);
+            python.RunPython();
         }
     }
 }

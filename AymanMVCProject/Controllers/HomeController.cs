@@ -70,5 +70,19 @@ namespace AymanMVCProject.Controllers
             }
             return View();
         }
+
+        public IActionResult TestLink()
+        {
+            try
+            {
+                var pythonRun = new Logic(_appSettings, 720); 
+                pythonRun.PythonExecutor();
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+            return Ok();
+        }
     }
 }

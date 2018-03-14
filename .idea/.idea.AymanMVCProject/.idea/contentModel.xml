@@ -13,6 +13,7 @@
         <e p="Controllers" t="Include">
           <e p="HomeController.cs" t="Include" />
         </e>
+        <e p="forecast.py" t="Include" />
         <e p="Models" t="Include">
           <e p="ErrorViewModel.cs" t="Include" />
           <e p="MainViewModel.cs" t="Include" />
@@ -566,6 +567,7 @@
         </e>
         <e p="Utility" t="Include">
           <e p="LoadData.cs" t="Include" />
+          <e p="PythonExec.cs" t="Include" />
           <e p="StaticUtility.cs" t="Include" />
           <e p="SymbolsUpdater.cs" t="Include" />
         </e>

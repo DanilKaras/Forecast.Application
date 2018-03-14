@@ -73,9 +73,37 @@ $('#make-forecast').click(function () {
     })
 });
 
+$('#trigger-block').click(function (){
+   $('#use-buttons').click();
+});
+
+
 $('#custom-slider:text').on('input', function(){
+    $('#use-slider').click();
     var $val = this.value;
     $('#ex13').slider('setValue', $val);
+    
+});
+
+$('#ex13').on('change',function(){
+    $('#use-slider').click();
+});
+
+$('#python-test').click(function () {
+
+    $.ajax({
+        url: utils.domain + '/TestLink',
+        type:'Get',
+        success: function (data) {
+            alert('success!');
+            utils.loaderHide();
+        },
+        error: function (error) {
+            alert('Not enough historical data!');
+            utils.loaderHide();
+        }
+    })
+    
 });
 
 var bindSelect = function () {
@@ -97,5 +125,3 @@ var bindSelect = function () {
         }
     })
 };
-
-

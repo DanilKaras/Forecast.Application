@@ -10,10 +10,10 @@
             <div class="col-md-12 list-group-item">
                
                     <label>
-                        <input type="radio" value="useButtons" name="radio" class="select-control" checked> <h4 class="label-text">Use Rudio Buttons</h4>
+                        <input type="radio" value="useButtons" id="use-buttons" name="radio" class="select-control" checked> <h4 class="label-text">Use Radio Buttons</h4>
                     </label>
                     
-                    <div >
+                    <div id="trigger-block">
                         <label class="toggle label-radiobtn">
                             <input type="radio" value="200" name="toggle" class="select-toggle" checked> <span class="label-text">200</span>
                         </label>
@@ -36,14 +36,14 @@
                     <div class="form-group row">
                         <div class="col-md-6">
                             <label>
-                                <input type="radio" value="useSlider" name="radio" class="select-control"> <h4 class="label-text">Use Slider</h4>
+                                <input type="radio" value="useSlider" id="use-slider" name="radio" class="select-control"> <h4 class="label-text">Use Slider</h4>
                             </label>
                         </div>
                         <div class="col-md-3 col-md-offset-3">
                             <input type="text" class="form-control pull-right" id="custom-slider">
                         </div>
                     </div>
-                    <div class="margin-top10">
+                    <div class="margin-top10" id="slider">
                         <input id="ex13" data-slider-step="2" data-slider-min="0" type="text"/>
                     </div>
                 </div>
@@ -63,6 +63,7 @@
                 
             <div class="list-group-item col-md-12">
                 <button type="button" id="make-forecast" class="btn btn-primary">FORECAST!</button>
+                <button type="button" id="python-test" class="btn btn-warning">PYTHON!</button>
             </div>
             </form>
         </div>          
