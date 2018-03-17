@@ -3,18 +3,23 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - AymanMVCProject</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <title>Coin Forecast</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-select/dist/css/bootstrap-select.min.css"/>
+    <link rel="stylesheet" href="~/lib/seiyria-bootstrap-slider/dist/css/bootstrap-slider.min.css" />
+    <link rel="stylesheet" href="~/lib/components-font-awesome/css/fontawesome-all.min.css"/>
+    <link rel="stylesheet" href="~/lib/toastr/toastr.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="~/css/site.css" />
-    <link rel="stylesheet" href="~/lib/bootstrap-select/dist/css/bootstrap-select.css"/>
-    <link rel="stylesheet" href="~/lib/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css" />
-    <link rel="stylesheet" href="~/lib/components-font-awesome/css/fontawesome-all.css"/>
-
 </head>
     
 <body>
 <div id="overlay"></div>
-<div class="loader"></div>
+<div id="loader" class="container-loader">
+    <div class="item item-1"></div>
+    <div class="item item-2"></div>
+    <div class="item item-3"></div>
+    <div class="item item-4"></div>
+</div>
 <div class="fluid-container body-content">
     @RenderBody()
     <hr/>
@@ -23,13 +28,15 @@
     </footer>
 </div>
 
-
-<script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
-<script src="~/lib/bootstrap-select/dist/js/bootstrap-select.js"></script>
-<script src="~/lib/seiyria-bootstrap-slider/dist/bootstrap-slider.js"></script>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="~/lib/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+<script src="~/lib/seiyria-bootstrap-slider/dist/bootstrap-slider.min.js"></script>
+<script src="~/lib/toastr/toastr.min.js"></script>
+<script src="~/js/components/utils.js" asp-append-version="true"></script>
+<script src="~/js/components/builder.js"></script>
+<script src="~/js/components/requests.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
-<script src="~/js/utils.js" asp-append-version="true"></script>
 
 @RenderSection("Scripts", required: false)
 </body>

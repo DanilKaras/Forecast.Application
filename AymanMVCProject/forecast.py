@@ -26,8 +26,8 @@ pd.options.display.float_format = '{:,.10f}'.format
 df = pd.read_csv(path + '/data.csv', parse_dates=['Time'])
 
 df.set_index('Time', inplace=True)
-#pd.set_option('display.height', None)
-#pd.set_option('display.max_rows', None)
+pd.set_option('display.height', None)
+pd.set_option('display.max_rows', None)
 
 df['ds'] = df.index
 df['y'] = df['avg']

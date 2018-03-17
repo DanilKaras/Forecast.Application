@@ -46,7 +46,7 @@ namespace DataCoin.Operations
 
         }
         
-        public bool IsMissingData(int period, List<List<AssetModel>> model)
+        public static bool IsMissingData(int period, List<List<AssetModel>> model)
         {
             return CountArrElements(model) != period;
         }
@@ -63,7 +63,7 @@ namespace DataCoin.Operations
             }
         }
         
-        private void Build(string url, string key, ref List<List<AssetModel>> modelSet)
+        private static void Build(string url, string key, ref List<List<AssetModel>> modelSet)
         {
 
             var response = StaticUtility.GenerateRestUrl(url, key);
@@ -83,7 +83,7 @@ namespace DataCoin.Operations
                 dateEndStr);
         }
         
-        private int CountArrElements(List<List<AssetModel>> model)
+        private static int CountArrElements(List<List<AssetModel>> model)
         {
             var counter = 0;
             if (model.Any())
@@ -99,7 +99,7 @@ namespace DataCoin.Operations
             return counter;
         }
         
-        private void RemoveExcess(int period, ref List<List<AssetModel>> model)
+        private static void RemoveExcess(int period, ref List<List<AssetModel>> model)
         {
             var modelPosition = 0;
             var modelElementsCount = CountArrElements(model);
@@ -121,7 +121,7 @@ namespace DataCoin.Operations
             }
         }
         
-        private List<AssetModel> RemoveExcessFromEnd(int period,  List<List<AssetModel>> helpModel, List<List<AssetModel>> mainModel)
+        private static List<AssetModel> RemoveExcessFromEnd(int period,  List<List<AssetModel>> helpModel, List<List<AssetModel>> mainModel)
         {
             var modelPosition = 0;
             var getElementsCount = period - CountArrElements(mainModel);
@@ -144,7 +144,6 @@ namespace DataCoin.Operations
                         }
                         tmpModel.Add(helpModel[i-1][j-1]);                    
                         modelPosition++;
-                        
                     }
                 }
             }

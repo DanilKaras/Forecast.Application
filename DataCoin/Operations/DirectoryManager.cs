@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Threading;
 using AymanMVCProject.Models;
 using Microsoft.Extensions.Options;
 
@@ -22,7 +23,7 @@ namespace DataCoin.Operations
         public string Location => location;
         public int CurrentCounts => GetRequestCount();
         public string OutFile => "out.csv";
-
+        private object locker;
         public string OutComponents => "components.png";
 
         public string OutForecast => "forecast.png";
@@ -35,6 +36,7 @@ namespace DataCoin.Operations
             location = Dir();
             countInfo = "counter.txt";
             currentCounts = 0;
+            locker = new ReaderWriterLock();
         }
 
         private string Dir()
@@ -122,9 +124,11 @@ namespace DataCoin.Operations
                 Console.WriteLine(e);
                 throw;
             }
-          
 
-            File.WriteAllText(counter, currentCounts.ToString());
+            lock (locker)
+            {
+                File.WriteAllText(counter, currentCounts.ToString());
+            }
         }
 
         private int GetRequestCount()

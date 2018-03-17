@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -12,6 +13,7 @@ using AymanMVCProject.Models;
 using DataCoin;
 using DataCoin.Operations;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
 using Microsoft.Extensions.Options;
 
 namespace AymanMVCProject.Controllers
@@ -115,7 +117,8 @@ namespace AymanMVCProject.Controllers
 
                 viewModel.RequestsPerDay = manager.CurrentCounts;
                 viewModel.AssetName = symbol;
-
+                
+                
             }
             catch (Exception e)
             {
@@ -174,9 +177,9 @@ namespace AymanMVCProject.Controllers
                     {
                         ID = values[0],
                         DS = values[dsPos],
-                        Yhat = values[yhatPos],
-                        YhatUpper =  values[yhatUpperPos],
-                        YhatLower = values[yhatLowerUpper]
+                        Yhat = Convert.ToDecimal(values[yhatPos]).ToString("E2"),
+                        YhatUpper = Convert.ToDecimal(values[yhatUpperPos]).ToString("E2"),
+                        YhatLower = Convert.ToDecimal(values[yhatLowerUpper]).ToString("E2"),  
                     };
                     table.Add(row);
                 }  

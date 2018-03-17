@@ -48,7 +48,7 @@ namespace DataCoin.Utility
             var dtMax = dateEnd;
             operations.FillModel(url, dtMin, dtMax, key, ref modelSet);
 
-            var isSomethingMissing = operations.IsMissingData(period, modelSet);
+            var isSomethingMissing = CoreOperations.IsMissingData(period, modelSet);
             
             if (isSomethingMissing)
             {

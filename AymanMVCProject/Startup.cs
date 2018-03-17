@@ -43,9 +43,11 @@ namespace AymanMVCProject
             }
 
             app.UseStaticFiles();
-            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "Forecast")))
+            
+            var appSetting = Configuration["ApplicationSettings:ForecastDir"];
+            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), appSetting)))
             {
-                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Forecast"));
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), appSetting));
             }
             
             app.UseStaticFiles(new StaticFileOptions

@@ -1,5 +1,0 @@
-INFO:fbprophet.forecaster:Disabling yearly seasonality. Run prophet with yearly_seasonality=True to override this.
-INFO:fbprophet.forecaster:Disabling weekly seasonality. Run prophet with weekly_seasonality=True to override this.
-INFO:fbprophet.forecaster:Found custom seasonality named "daily", disabling built-in daily seasonality.
-/Users/danylokaras/anaconda2/lib/python2.7/site-packages/pystan/misc.py:399: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
-  elif np.issubdtype(np.asarray(v).dtype, float):
