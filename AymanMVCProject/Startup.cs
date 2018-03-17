@@ -1,9 +1,11 @@
 ﻿using System.Configuration;
+using System.IO;
 using AymanMVCProject.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 
 namespace AymanMVCProject
 {
@@ -41,7 +43,17 @@ namespace AymanMVCProject
             }
 
             app.UseStaticFiles();
-
+            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "Forecast")))
+            {
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Forecast"));
+            }
+            
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "Forecast")),
+                RequestPath = "/Forecast"
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

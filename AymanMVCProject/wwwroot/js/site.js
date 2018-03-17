@@ -30,10 +30,12 @@ $('#update-assets').click(function (){
 $('#make-forecast').click(function () {
     utils.loaderShow();
     
-    var useSeasonality = false;
+    var hourlySeasonality = false;
+    var dailySeasonality = false;
     var symbol = '';
     var selectedGroup ='';
     var dataHours = 0;
+    var periods = 0;
     var postData = '';
     
     selectedGroup = $('input[name=radio]:checked').val();
@@ -50,12 +52,16 @@ $('#make-forecast').click(function () {
     }
 
     symbol = $('.selectpicker option:selected').val();
-    useSeasonality = $('#seasonality-chk').is(':checked');
+    hourlySeasonality = $('#seasonality-houly').is(':checked');
+    dailySeasonality = $('#seasonality-daily').is(':checked');
+    periods = $('input[name=period]:checked').val();
     
     postData = {
         symbol: symbol,
         dataHours: dataHours,
-        useSeasonality: useSeasonality
+        periods: periods,
+        hourlySeasonality: hourlySeasonality,
+        dailySeasonality: dailySeasonality
     };
     
     $.ajax({
@@ -63,11 +69,46 @@ $('#make-forecast').click(function () {
         type:'Post',
         data: postData,
         success: function (data) {
-            alert('success!');
+            
+            if (data){
+                var $table = data.table;
+                var $content = '';
+                for(var i = 0; i < $table.length; i++)
+                {
+                    $content += "<tr><td>" +
+                        $table[i].id+"</td><td>"+
+                        $table[i].ds+"</td><td>"+
+                        $table[i].yhat+"</td><td>"+
+                        $table[i].yhatLower+"</td><td>"+
+                        $table[i].yhatUpper+"</td></tr>";
+                }
+                $('#table-content').html($content);
+            }
+
+            var imgForecast = $('<img />', {
+                id: 'forecast',
+                src: data.forecastPath,
+                class: "img-responsive",
+                alt: 'Cinque Terre'
+            });
+            
+            var imgComponents = $('<img />', {
+                id: 'components',
+                src: data.componentsPath,
+                class: "img-responsive",
+                alt: 'Cinque Terre'
+            });
+            
+            $('#asset-name').html(data.assetName);
+            $('#forecast-place').html(imgForecast);
+            
+            
+            $('#components-place').html(imgComponents);
+            
             utils.loaderHide();
         },
         error: function (error) {
-            alert('Not enough historical data!');
+            alert(error.responseJSON.message);
             utils.loaderHide();
         }
     })
@@ -99,7 +140,7 @@ $('#python-test').click(function () {
             utils.loaderHide();
         },
         error: function (error) {
-            alert('Not enough historical data!');
+            alert(error.responseJSON.message);
             utils.loaderHide();
         }
     })

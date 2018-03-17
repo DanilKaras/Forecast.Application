@@ -22,10 +22,11 @@ namespace DataCoin.Utility
         private readonly string url;
         private readonly string key;
         private readonly CoreOperations operations;
-        
+        private readonly string fileName;
         private IOptions<ApplicationSettings> _service;
+        private DirectoryManager manager;
         
-        public LoadData(IOptions<ApplicationSettings> service, string coinName, int period)
+        public LoadData(IOptions<ApplicationSettings> service, string coinName, int period, string currentLocation)
         {
             _service = service;
             
@@ -36,8 +37,9 @@ namespace DataCoin.Utility
             this.coinName = coinName;
             dateEnd = DateTime.Now;
             dateStart = DateTime.Now.AddHours(-1 * period);
-            
-            operations = new CoreOperations(url, coinName);
+            operations = new CoreOperations(url, coinName, currentLocation, service);
+            manager = new DirectoryManager(service, currentLocation);
+            fileName = "data.csv";
         }
 
         public void UploadHistoryFromServer()
@@ -58,9 +60,11 @@ namespace DataCoin.Utility
         {   
             var csv = new StringBuilder();
             const string fs = "Time";
-            const string sc = "avg";
-                
+            const string sc = "avg";    
             var newLine1 = $"{fs},{sc}{Environment.NewLine}";
+            
+            var location = manager.GenerateForecastFolder(coinName, period);
+            
             csv.Append(newLine1);
             var counter = 0;
             var maxcount = 0;
@@ -82,21 +86,19 @@ namespace DataCoin.Utility
                     counter++;
              
                     var d2 = StaticUtility.TimeConverter(item.TimeClose).ToLocalTime();
- 
-                    var formattedDate = d2.ToString("u").Replace("Z", "") + " UTC";
+
+                    var formattedDate = d2.ToString("u").Replace("Z", "");// + " UTC";
                     var avg = (item.PriceClose + item.PriceHigh + item.PriceLow) / 3;
                     
                     var second = avg.ToString(CultureInfo.CurrentCulture);
                     var newLine = counter < maxcount ? $"{formattedDate},{second}{Environment.NewLine}" : $"{formattedDate},{second}";
                     csv.Append(newLine);
                 }
-
             }
-            var generatedName = coinName + "_" + DateTime.Now.ToString("T").Replace(':', '_') + ".csv";
-            var fileName = Path.Combine(path, generatedName);
-            File.WriteAllText(fileName, csv.ToString());
+
+            var saveTo = Path.Combine(location, fileName);
+            
+            File.WriteAllText(saveTo, csv.ToString());
         }
-
-
     }
 }

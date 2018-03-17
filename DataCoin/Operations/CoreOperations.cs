@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
+using AymanMVCProject.Models;
 using DataCoin.Models;
 using DataCoin.Utility;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace DataCoin.Operations
@@ -14,14 +16,20 @@ namespace DataCoin.Operations
     {
         private readonly string apiUrl;
         private readonly string coinName;
-        public CoreOperations(string apiUrl, string coinName)
+        private readonly DirectoryManager manager;
+        private IOptions<ApplicationSettings> services;
+
+        public CoreOperations(string apiUrl, string coinName, string currentLocation, IOptions<ApplicationSettings> services)
         {
             this.apiUrl = apiUrl;
             this.coinName = coinName;
+            this.services = services;
+            manager= new DirectoryManager(services, currentLocation); 
         }
         
         public void FillModel(string url, DateTime dtMin, DateTime dtMax, string apiKey, ref List<List<AssetModel>> modelSet)
         {
+            var counter = 0;
             while (dtMin < dtMax.AddDays(4))
             {
                 var dateStartStr = dtMin.ToString("s");
@@ -31,7 +39,11 @@ namespace DataCoin.Operations
                 Build(coinUrl, apiKey, ref modelSet);
                 
                 dtMin = dtMin.AddDays(4);
+                counter++;
             }
+
+            manager.UpdateRequests(counter);
+
         }
         
         public bool IsMissingData(int period, List<List<AssetModel>> model)
@@ -152,9 +164,10 @@ namespace DataCoin.Operations
             var requestsCount = Convert.ToInt32(difference / 100) + 1;
             var tmpDate = dateStart;
             var tmpModelSet = new List<List<AssetModel>>();
-                
+            var counter = 0;    
             while (requestsCount != 0)
             {
+                counter++;
                 var firstItemInModel = StaticUtility.TimeConverter(model.First().First().TimeClose);
                 var dtMax = tmpDate;
                 
@@ -170,6 +183,8 @@ namespace DataCoin.Operations
                 requestsCount--;
             }
 
+            manager.UpdateRequests(counter);
+            
             if (tmpModelSet.Any())
             {
                 var tmpCounterfForModel = CountArrElements(tmpModelSet);

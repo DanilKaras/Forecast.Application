@@ -7,5 +7,6 @@
         public string FileName { get; set; }
         public string ForecastDir { get; set; }
         public string RootFolder { get; set; }
+        public string PythonLocation { get; set; }
     }
 }

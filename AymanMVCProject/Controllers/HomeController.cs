@@ -1,10 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using AymanMVCProject.Models;
 using DataCoin;
+using DataCoin.Operations;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace AymanMVCProject.Controllers
@@ -12,11 +19,12 @@ namespace AymanMVCProject.Controllers
     public class HomeController : Controller
     {
         private IOptions<ApplicationSettings> _appSettings;
+        private string currentLocation;
 
-        public HomeController(IOptions<ApplicationSettings> appSettings)
+        public HomeController(IOptions<ApplicationSettings> appSettings, IHostingEnvironment env)
         {
             _appSettings = appSettings;
-           
+            currentLocation = env.ContentRootPath;
         }
         
         [HttpGet]
@@ -31,7 +39,7 @@ namespace AymanMVCProject.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> UpdateAssets()
+        public IActionResult UpdateAssets()
         {
             var assets = new Logic(_appSettings);
             assets.UpdateAseets();
@@ -39,7 +47,7 @@ namespace AymanMVCProject.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> SymbolsList()
+        public IActionResult SymbolsList()
         {
             try
             {
@@ -55,34 +63,152 @@ namespace AymanMVCProject.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index(string symbol, int dataHours, bool useSeasonality)
+        public async Task<ActionResult> Index(string symbol, int dataHours, int periods, bool hourlySeasonality, bool dailySeasonality)
         {
+            var viewModel = new MainViewModel();
+            var coinHistory = new Logic(_appSettings, symbol, dataHours, currentLocation);
+            var manager = new DirectoryManager(_appSettings, currentLocation);
+            var pythonRun = new Logic(_appSettings); 
             try
             {
-                var coinHistory = new Logic(_appSettings, symbol, dataHours);
                 coinHistory.GenerateCsvFile();
+
+                pythonRun.PythonExecutor(manager.LastFolder, periods, hourlySeasonality, dailySeasonality);
+
+                var pathToOut = Path.Combine(manager.LastFolder, manager.OutFile);
+                var pathToComponents = Path.Combine(manager.LastFolder, manager.OutComponents);
+                var pathToForecast = Path.Combine(manager.LastFolder, manager.OutForecast);
+               
+                var pathToComponentsForImg = Path.Combine(_appSettings.Value.ForecastDir, manager.FolderForImg, manager.OutComponents);
+                var pathToForecastForImg = Path.Combine(_appSettings.Value.ForecastDir,manager.FolderForImg, manager.OutForecast);
                 
+                var outCreated =  await WaitForFile(pathToOut, 60);
+                var componentsCreated = await WaitForFile(pathToComponents, 10);
+                var forecastCreated = await WaitForFile(pathToForecast, 10);
+
+                if (outCreated)
+                {
+                    viewModel.Table = BuildOutTableRows(pathToOut, periods);
+                }
+                else 
+                {
+                    return NotFound(new { message = "out.csv not found", requestCount = manager.CurrentCounts });
+                }
+
+                if (forecastCreated)
+                {
+                    viewModel.ForecastPath = pathToForecastForImg;
+                }
+                else
+                {
+                    return NotFound(new { message = "forecast.png not found", requestCount = manager.CurrentCounts});
+                }
+                
+                if (componentsCreated)
+                {
+                    viewModel.ComponentsPath = pathToComponentsForImg;
+                }
+                else
+                {
+                    return NotFound(new { message = "components.png not found", requestCount = manager.CurrentCounts});
+                }
+
+                viewModel.RequestsPerDay = manager.CurrentCounts;
+                viewModel.AssetName = symbol;
+
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                throw new Exception();
+                return NotFound(new {message = "Not enough data to process!", requestCount = manager.CurrentCounts});
             }
-            return View();
+            
+            return Json(viewModel);
         }
 
         public IActionResult TestLink()
         {
-            try
+            var manager = new DirectoryManager(_appSettings, currentLocation);
+            manager.UpdateRequests(100);
+           //pythonRun.PythonExecutor(DirectoryManager.GetLastFolder(pyPath), 72, false, false);
+//            var test = new DirectoryManager(_appSettings);
+//            var lastFolger = test.LastFolder;
+//            try
+//            {
+//                //var pythonRun = new Logic(_appSettings); 
+//                //pythonRun.PythonExecutor(lastFolger, 24, true, false);
+//                var data = BuildOutTableRows(lastFolger, 24);
+//            }
+//            catch (Exception e)
+//            {
+//                throw new Exception();
+//            }
+              return Ok();
+        }
+
+        private static IEnumerable<TableRow> BuildOutTableRows(string path, int period)
+        {
+            var table = new List<TableRow>();
+            var reader = new StreamReader(System.IO.File.OpenRead($"{path}"));
+            var counter = 0;
+
+            var dsPos = 0;
+            var yhatPos = 0;
+            var yhatUpperPos = 0;
+            var yhatLowerUpper = 0;
+            while (!reader.EndOfStream)
             {
-                var pythonRun = new Logic(_appSettings, 720); 
-                pythonRun.PythonExecutor();
+                counter++;
+                var line = reader.ReadLine();
+                
+                var values = line.Split(',');
+                if (counter == 1)
+                {
+                    dsPos = FindPosition(values, "ds");
+                    yhatPos = FindPosition(values, "yhat");
+                    yhatUpperPos = FindPosition(values, "yhat_lower");
+                    yhatLowerUpper = FindPosition(values, "yhat_upper");
+                }
+                else
+                {
+                    var row = new TableRow()
+                    {
+                        ID = values[0],
+                        DS = values[dsPos],
+                        Yhat = values[yhatPos],
+                        YhatUpper =  values[yhatUpperPos],
+                        YhatLower = values[yhatLowerUpper]
+                    };
+                    table.Add(row);
+                }  
             }
-            catch (Exception e)
+               
+            return table.Skip(Math.Max(0, table.Count() - period)).Reverse();
+        }
+
+        private static int FindPosition(IEnumerable<string> array, string colName)
+        {
+            var pos = -1;
+            foreach (var item in array)
             {
-                throw new Exception();
+                pos++;
+                if (item == colName)
+                {
+                    return pos;
+                }
             }
-            return Ok();
+            return 0;
+        }
+        
+        private static async Task<bool> WaitForFile(string path, int timeout)
+        {
+            var timeoutAt = DateTime.Now.AddSeconds(timeout);
+            while (true)
+            {
+                if (System.IO.File.Exists(path)) return true;
+                if (DateTime.Now >= timeoutAt) return false;
+                await Task.Delay(10);
+            }
         }
     }
+    
 }
