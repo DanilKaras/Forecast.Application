@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Text;
 using AymanMVCProject.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -16,7 +17,11 @@ namespace DataCoin.Utility
 
             request.AddHeader("X-CoinAPI-Key", apiKey);
             var response = client.Execute(request);
-            return response.StatusDescription == "Too Many Requests" ? null : response;            
+            if (response.StatusDescription == "Too Many Requests")
+            {
+                throw new Exception();
+            }
+            return response;
         } 
 
         public static DateTime TimeConverter(string time)

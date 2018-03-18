@@ -70,11 +70,19 @@ namespace AymanMVCProject.Controllers
             var viewModel = new MainViewModel();
             var coinHistory = new Logic(_appSettings, symbol, dataHours, currentLocation);
             var manager = new DirectoryManager(_appSettings, currentLocation);
-            var pythonRun = new Logic(_appSettings); 
+            var pythonRun = new Logic(_appSettings);
+
             try
             {
                 coinHistory.GenerateCsvFile();
-
+            }
+            catch (Exception e)
+            {
+                return NotFound(new { message = "To many requests!", requestCount = manager.CurrentCounts});
+            }
+            
+            try
+            {
                 pythonRun.PythonExecutor(manager.LastFolder, periods, hourlySeasonality, dailySeasonality);
 
                 var pathToOut = Path.Combine(manager.LastFolder, manager.OutFile);
@@ -130,9 +138,10 @@ namespace AymanMVCProject.Controllers
 
         public IActionResult TestLink()
         {
-            var manager = new DirectoryManager(_appSettings, currentLocation);
-            manager.UpdateRequests(100);
-           //pythonRun.PythonExecutor(DirectoryManager.GetLastFolder(pyPath), 72, false, false);
+            var manager = new DirectoryManager(_appSettings, currentLocation);            
+            var pythonRun = new Logic(_appSettings);
+            var pyDir = @"/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Forecast/17-03-18/BINANCE_SPOT_NULS_BTC_200_08.18.34"; 
+            pythonRun.PythonExecutor(pyDir, 72, false, false);
 //            var test = new DirectoryManager(_appSettings);
 //            var lastFolger = test.LastFolder;
 //            try
@@ -177,9 +186,9 @@ namespace AymanMVCProject.Controllers
                     {
                         ID = values[0],
                         DS = values[dsPos],
-                        Yhat = Convert.ToDecimal(values[yhatPos]).ToString("E2"),
-                        YhatUpper = Convert.ToDecimal(values[yhatUpperPos]).ToString("E2"),
-                        YhatLower = Convert.ToDecimal(values[yhatLowerUpper]).ToString("E2"),  
+                        Yhat = string.Format("{0:F7}", Convert.ToDecimal(values[yhatPos])),
+                        YhatUpper = string.Format("{0:F7}", Convert.ToDecimal(values[yhatUpperPos])),
+                        YhatLower = string.Format("{0:F7}", Convert.ToDecimal(values[yhatLowerUpper])),
                     };
                     table.Add(row);
                 }  

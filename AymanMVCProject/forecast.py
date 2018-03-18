@@ -3,6 +3,7 @@ import sys
 import pandas as pd 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.dates as mdates
 import numpy
 import matplotlib
 from matplotlib import pylab, mlab, pyplot
@@ -36,9 +37,10 @@ forecast_data.reset_index(inplace=True)
 del forecast_data['Time']
 
 m = Prophet()
-
+plotPos = 1
 if seasonalityHourly:
     m.add_seasonality(name='hourly', period=0.04, fourier_order=5)
+    plotPos = 2
 
 if seasonalityDaily:
     m.add_seasonality(name='daily', period=1, fourier_order=5)
@@ -47,10 +49,33 @@ m.fit(forecast_data)
 
 future = m.make_future_dataframe(periods = pers, freq='H')
 forecast = m.predict(future)
-fig = m.plot(forecast, xlabel='Date', ylabel='Price (BTC)')
+fig = m.plot(forecast, xlabel='', ylabel='   ')
+fig.gca().yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.5f}'))
 
-fig.gca().yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.10f}'))
+
+cmp = m.plot_components(forecast)
+allAxes = cmp.get_axes()
+
+subPlot = allAxes[plotPos].get_xticks()
+
+newTicks = []
+sub = (subPlot[-1]-subPlot[0])/24
+start = subPlot[0]
+for i in range(0,25):
+    newTicks.append(start)
+    start += sub
+
+@mpl.ticker.FuncFormatter
+def major_formatter(x, pos):
+    if pos == 24:
+        return 0
+    return pos
+
+formatter = mpl.ticker.FuncFormatter(mdates.DateFormatter('%m/%d/%y'))
+
+allAxes[plotPos].xaxis.set_major_formatter(major_formatter)
+allAxes[0].xaxis.set_major_formatter(formatter)
 
 forecast.to_csv(path+'/out.csv')
 fig.savefig(path+'/forecast.png')
-m.plot_components(forecast).savefig(path+'/components.png')
+cmp.savefig(path+'/components.png', dpi=200)

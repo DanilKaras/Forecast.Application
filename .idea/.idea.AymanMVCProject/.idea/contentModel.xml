@@ -16,7 +16,134 @@
         <e p="errors.txt" t="Include" />
         <e p="forecast" t="Include">
           <e p="17-03-18" t="Include">
+            <e p="BINANCE_SPOT_NULS_BTC_200_08.09.15" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_08.10.50" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_08.18.34" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
             <e p="BINANCE_SPOT_NULS_BTC_720_07.32.54" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="counter.txt" t="Include" />
+          </e>
+          <e p="18-03-18" t="Include">
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.00.25" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.02.30" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.03.00" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.03.37" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.03.50" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.06.42" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.07.48" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.10.38" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.13.09" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.13.59" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.22.17" t="Include">
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.23.34" t="Include">
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.25.57" t="Include">
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.30.57" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_200_12.34.30" t="Include">
+              <e p="components.png" t="Include" />
+              <e p="data.csv" t="Include" />
+              <e p="errors.txt" t="Include" />
+              <e p="forecast.png" t="Include" />
+              <e p="out.csv" t="Include" />
+            </e>
+            <e p="BINANCE_SPOT_NULS_BTC_720_12.14.15" t="Include">
               <e p="components.png" t="Include" />
               <e p="data.csv" t="Include" />
               <e p="errors.txt" t="Include" />

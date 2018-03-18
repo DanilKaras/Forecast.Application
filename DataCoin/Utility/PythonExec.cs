@@ -50,7 +50,6 @@ namespace DataCoin.Operations
                             var saveTo = Path.Combine(path, "errors.txt");
                             File.WriteAllText(saveTo, errors);
                         }
-                    
                         process.WaitForExit();
                     }
                 }

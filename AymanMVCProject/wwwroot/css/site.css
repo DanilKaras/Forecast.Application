@@ -92,7 +92,7 @@ html{
     top: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
 .margin-top10{
@@ -117,13 +117,12 @@ input[type="checkbox"], input[type="radio"]{
 }
 
 
-
-.forecast-place{
+#forecast-place{
     width: 90%;
 }
 
-.components-place{
-    width: 909%;
+#components-place{
+    width: 90%;
 }
 
 /*Check box*/
