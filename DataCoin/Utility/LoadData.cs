@@ -56,14 +56,14 @@ namespace DataCoin.Utility
             }
         }
 
-        public void LoadToCsv(string path)
+        public void LoadToCsv(string location)
         {   
             var csv = new StringBuilder();
             const string fs = "Time";
             const string sc = "avg";    
             var newLine1 = $"{fs},{sc}{Environment.NewLine}";
             
-            var location = manager.GenerateForecastFolder(coinName, period);
+            //var location = manager.GenerateForecastFolder(coinName, period, DirSwitcher.Manual);
             
             csv.Append(newLine1);
             var counter = 0;
@@ -88,8 +88,19 @@ namespace DataCoin.Utility
                     var d2 = StaticUtility.TimeConverter(item.TimeClose).ToLocalTime();
 
                     var formattedDate = d2.ToString("u").Replace("Z", "");// + " UTC";
-                    var avg = (item.PriceClose + item.PriceHigh + item.PriceLow) / 3;
-                    
+                    decimal avg = 0;
+                    try
+                    {
+                        checked
+                        {
+                            avg = ((item.PriceClose + item.PriceHigh + item.PriceLow) / 3) * 100;
+                        }
+                    }
+                    catch (System.OverflowException e)
+                    {
+                        // The following line displays information about the error.
+                        Console.WriteLine("CHECKED and CAUGHT:  " + e.ToString());
+                    }
                     var second = avg.ToString(CultureInfo.CurrentCulture);
                     var newLine = counter < maxcount ? $"{formattedDate},{second}{Environment.NewLine}" : $"{formattedDate},{second}";
                     csv.Append(newLine);

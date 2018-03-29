@@ -17,14 +17,19 @@ namespace DataCoin.Operations
         private readonly string apiUrl;
         private readonly string coinName;
         private readonly DirectoryManager manager;
-        private IOptions<ApplicationSettings> services;
+        private IOptions<ApplicationSettings> appSettings;
 
-        public CoreOperations(string apiUrl, string coinName, string currentLocation, IOptions<ApplicationSettings> services)
+        public CoreOperations(string apiUrl, string coinName, string currentLocation, IOptions<ApplicationSettings> appSettings)
         {
             this.apiUrl = apiUrl;
             this.coinName = coinName;
-            this.services = services;
-            manager= new DirectoryManager(services, currentLocation); 
+            this.appSettings = appSettings;
+            manager= new DirectoryManager(appSettings, currentLocation); 
+        }
+
+        public CoreOperations(IOptions<ApplicationSettings> appSettings)
+        {
+            this.appSettings = appSettings;
         }
         
         public void FillModel(string url, DateTime dtMin, DateTime dtMax, string apiKey, ref List<List<AssetModel>> modelSet)
@@ -74,7 +79,7 @@ namespace DataCoin.Operations
             }
         }
         
-        private string BuildCoinUrl(string url, string coinName, string dateStartStr, string dateEndStr)
+        private static string BuildCoinUrl(string url, string coinName, string dateStartStr, string dateEndStr)
         {
             return string.Format("{0}/ohlcv/{1}/history?period_id=1HRS&time_start={2}&time_end={3}",
                 url,
@@ -86,14 +91,14 @@ namespace DataCoin.Operations
         private static int CountArrElements(List<List<AssetModel>> model)
         {
             var counter = 0;
-            if (model.Any())
+            
+            if (!model.Any()) return counter;
+            
+            foreach (var subSet in model)
             {
-                foreach (var subSet in model)
+                foreach (var coinRecord in subSet)
                 {
-                    foreach (var coinRecord in subSet)
-                    {
-                        counter++;
-                    }
+                    counter++;
                 }
             }
             return counter;
@@ -111,12 +116,10 @@ namespace DataCoin.Operations
                 for (var j = 0; j < model[i].Count; j++)
                 {
                     modelPosition++;
-                    if (modelPosition <= modelElementsCount - period) 
-                    {
-                        model[i].RemoveRange(j, modelElementsCount - period);
-                        stopFor = true;
-                        break;
-                    }        
+                    if (modelPosition > modelElementsCount - period) continue;
+                    model[i].RemoveRange(j, modelElementsCount - period);
+                    stopFor = true;
+                    break;
                 }
             }
         }
@@ -132,10 +135,10 @@ namespace DataCoin.Operations
             
             try
             {
-                for (int i = helpModel.Count; i > 0; i--)
+                for (var i = helpModel.Count; i > 0; i--)
                 {
                     if(stopFor) break;
-                    for (int j = helpModel[i-1].Count; j > 0; j--)
+                    for (var j = helpModel[i-1].Count; j > 0; j--)
                     {
                         if (modelPosition >= getElementsCount)
                         {
@@ -193,13 +196,39 @@ namespace DataCoin.Operations
                 }
                 else
                 {
-                    throw new Exception();
+                    throw new Exception("Something's wrong with a coin");
                 }
             }
             else
             {
-                throw new Exception();
+                throw new Exception("Something's wrong with a coin");
             }
+        }
+        
+        public Indicator Indicatior(IEnumerable<TableRow> table)
+        {
+            var tableRows = table.ToList();
+
+            if (!decimal.TryParse(appSettings.Value.Border, out var border))
+            {
+                throw new Exception("Wrong Value of Border in App Settings!");
+            }
+            
+            var lowest = Convert.ToDecimal(tableRows.Last().Yhat);
+            var highest = Convert.ToDecimal(tableRows.First().Yhat);
+            var differense = (1 - 1 / (highest / lowest)) * 100;
+            
+            if (differense > 0)
+            {
+                return Indicator.Positive;
+            }
+
+            if (border < differense && differense <= 0)
+            {
+                return Indicator.Neutral;
+            }
+
+            return Indicator.Negative;
         }
     }
 }

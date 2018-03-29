@@ -11,17 +11,21 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using AymanMVCProject.Models;
 using DataCoin;
+using DataCoin.Models;
 using DataCoin.Operations;
+using DataCoin.Utility;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.Extensions.Options;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 
 namespace AymanMVCProject.Controllers
 {
     public class HomeController : Controller
     {
-        private IOptions<ApplicationSettings> _appSettings;
-        private string currentLocation;
+        private readonly IOptions<ApplicationSettings> _appSettings;
+        private readonly string currentLocation;
 
         public HomeController(IOptions<ApplicationSettings> appSettings, IHostingEnvironment env)
         {
@@ -34,12 +38,20 @@ namespace AymanMVCProject.Controllers
         {
             return View();
         }
-
-        public IActionResult Error()
+        
+        [HttpGet]
+        public IActionResult ManualForecast()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View();
         }
 
+        [HttpGet]
+        public IActionResult RequestsForToday()
+        {
+            var manager = new DirectoryManager(_appSettings, currentLocation);
+            return Json(new {requestCount  = manager.CurrentCounts});
+        }
+        
         [HttpGet]
         public IActionResult UpdateAssets()
         {
@@ -54,7 +66,10 @@ namespace AymanMVCProject.Controllers
             try
             {
                 var logic = new Logic(_appSettings);
-                var symbols = logic.GetAllSymbols().OrderBy(x => x).ToList();
+                var symbols = logic.GetAllSymbols();
+                
+                symbols = symbols?.OrderBy(x => x).ToList();
+
                 return Json(new {symbols = symbols});
             }
             catch (Exception e)
@@ -65,40 +80,33 @@ namespace AymanMVCProject.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Index(string symbol, int dataHours, int periods, bool hourlySeasonality, bool dailySeasonality)
+        public async Task<IActionResult> ManualForecast(string symbol, int dataHours, int periods, bool hourlySeasonality, bool dailySeasonality)
         {
             var viewModel = new MainViewModel();
-            var coinHistory = new Logic(_appSettings, symbol, dataHours, currentLocation);
+            var coin = new Logic(_appSettings, symbol, dataHours, currentLocation);
             var manager = new DirectoryManager(_appSettings, currentLocation);
             var pythonRun = new Logic(_appSettings);
-
-            try
-            {
-                coinHistory.GenerateCsvFile();
-            }
-            catch (Exception e)
-            {
-                return NotFound(new { message = "To many requests!", requestCount = manager.CurrentCounts});
-            }
             
             try
             {
-                pythonRun.PythonExecutor(manager.LastFolder, periods, hourlySeasonality, dailySeasonality);
+                var pathToFolder = manager.GenerateForecastFolder(symbol, periods, DirSwitcher.Manual);
+                coin.GenerateCsvFile(pathToFolder);
+                pythonRun.PythonExecutor(manager.GetLastFolder(DirSwitcher.Manual), periods, hourlySeasonality, dailySeasonality);
 
-                var pathToOut = Path.Combine(manager.LastFolder, manager.OutFile);
-                var pathToComponents = Path.Combine(manager.LastFolder, manager.OutComponents);
-                var pathToForecast = Path.Combine(manager.LastFolder, manager.OutForecast);
+                var pathToOut = Path.Combine(manager.GetLastFolder(DirSwitcher.Manual), manager.OutFile);
+                var pathToComponents = Path.Combine(manager.GetLastFolder(DirSwitcher.Manual), manager.OutComponents);
+                var pathToForecast = Path.Combine(manager.GetLastFolder(DirSwitcher.Manual), manager.OutForecast);
                
-                var pathToComponentsForImg = Path.Combine(_appSettings.Value.ForecastDir, manager.FolderForImg, manager.OutComponents);
-                var pathToForecastForImg = Path.Combine(_appSettings.Value.ForecastDir,manager.FolderForImg, manager.OutForecast);
+                var pathToComponentsForImg = Path.Combine(_appSettings.Value.ForecastDir, manager.DirForImages(DirSwitcher.Manual), manager.OutComponents);
+                var pathToForecastForImg = Path.Combine(_appSettings.Value.ForecastDir, manager.DirForImages(DirSwitcher.Manual), manager.OutForecast);
                 
-                var outCreated =  await WaitForFile(pathToOut, 60);
-                var componentsCreated = await WaitForFile(pathToComponents, 10);
-                var forecastCreated = await WaitForFile(pathToForecast, 10);
+                var outCreated =  await StaticUtility.WaitForFile(pathToOut, 60);
+                var componentsCreated = await StaticUtility.WaitForFile(pathToComponents, 10);
+                var forecastCreated = await StaticUtility.WaitForFile(pathToForecast, 10);
 
                 if (outCreated)
                 {
-                    viewModel.Table = BuildOutTableRows(pathToOut, periods);
+                    viewModel.Table = StaticUtility.BuildOutTableRows(pathToOut, periods);
                 }
                 else 
                 {
@@ -107,7 +115,7 @@ namespace AymanMVCProject.Controllers
 
                 if (forecastCreated)
                 {
-                    viewModel.ForecastPath = pathToForecastForImg;
+                    viewModel.ForecastPath = "/" + pathToForecastForImg;
                 }
                 else
                 {
@@ -116,7 +124,7 @@ namespace AymanMVCProject.Controllers
                 
                 if (componentsCreated)
                 {
-                    viewModel.ComponentsPath = pathToComponentsForImg;
+                    viewModel.ComponentsPath = "/" + pathToComponentsForImg;
                 }
                 else
                 {
@@ -125,102 +133,50 @@ namespace AymanMVCProject.Controllers
 
                 viewModel.RequestsPerDay = manager.CurrentCounts;
                 viewModel.AssetName = symbol;
-                
-                
+
+                viewModel.Indicator = coin.DefineTrend(viewModel.Table);
             }
             catch (Exception e)
             {
-                return NotFound(new {message = "Not enough data to process!", requestCount = manager.CurrentCounts});
+                return NotFound(new {message = e.Message, requestCount = manager.CurrentCounts});
             }
             
             return Json(viewModel);
         }
 
-        public IActionResult TestLink()
-        {
-            var manager = new DirectoryManager(_appSettings, currentLocation);            
-            var pythonRun = new Logic(_appSettings);
-            var pyDir = @"/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Forecast/17-03-18/BINANCE_SPOT_NULS_BTC_200_08.18.34"; 
-            pythonRun.PythonExecutor(pyDir, 72, false, false);
-//            var test = new DirectoryManager(_appSettings);
-//            var lastFolger = test.LastFolder;
-//            try
-//            {
-//                //var pythonRun = new Logic(_appSettings); 
-//                //pythonRun.PythonExecutor(lastFolger, 24, true, false);
-//                var data = BuildOutTableRows(lastFolger, 24);
-//            }
-//            catch (Exception e)
-//            {
-//                throw new Exception();
-//            }
-              return Ok();
+        [HttpGet]
+        public IActionResult AutomaticForecast()
+        {   
+            return View();
         }
 
-        private static IEnumerable<TableRow> BuildOutTableRows(string path, int period)
+        [HttpPost]
+        public async Task<IActionResult> AutomaticForecastPost(int dataHours, int periods, bool hourlySeasonality, bool dailySeasonality)
         {
-            var table = new List<TableRow>();
-            var reader = new StreamReader(System.IO.File.OpenRead($"{path}"));
-            var counter = 0;
-
-            var dsPos = 0;
-            var yhatPos = 0;
-            var yhatUpperPos = 0;
-            var yhatLowerUpper = 0;
-            while (!reader.EndOfStream)
+            var manager = new DirectoryManager(_appSettings, currentLocation);
+            var assets = StaticUtility.ReadFromExcel(manager.AsstesLocation);
+            var symbol = assets.First();
+            var coin = new Logic(_appSettings, symbol, dataHours, currentLocation);
+            var pathToFolder = manager.GenerateForecastFolder(symbol, periods, DirSwitcher.Auto);           
+            //test purpose
+            try
             {
-                counter++;
-                var line = reader.ReadLine();
-                
-                var values = line.Split(',');
-                if (counter == 1)
-                {
-                    dsPos = FindPosition(values, "ds");
-                    yhatPos = FindPosition(values, "yhat");
-                    yhatUpperPos = FindPosition(values, "yhat_lower");
-                    yhatLowerUpper = FindPosition(values, "yhat_upper");
-                }
-                else
-                {
-                    var row = new TableRow()
-                    {
-                        ID = values[0],
-                        DS = values[dsPos],
-                        Yhat = string.Format("{0:F7}", Convert.ToDecimal(values[yhatPos])),
-                        YhatUpper = string.Format("{0:F7}", Convert.ToDecimal(values[yhatUpperPos])),
-                        YhatLower = string.Format("{0:F7}", Convert.ToDecimal(values[yhatLowerUpper])),
-                    };
-                    table.Add(row);
-                }  
+                manager.SpecifyDirByTrend(Indicator.Negative, pathToFolder);
             }
-               
-            return table.Skip(Math.Max(0, table.Count() - period)).Reverse();
-        }
-
-        private static int FindPosition(IEnumerable<string> array, string colName)
-        {
-            var pos = -1;
-            foreach (var item in array)
+            catch (Exception e)
             {
-                pos++;
-                if (item == colName)
-                {
-                    return pos;
-                }
+                Console.WriteLine(e);
+                throw;
             }
-            return 0;
+            
+            
+            //var pythonRun = new Logic(_appSettings);
+            return Json(new {assets = assets}); 
         }
         
-        private static async Task<bool> WaitForFile(string path, int timeout)
+        public IActionResult TestLink()
         {
-            var timeoutAt = DateTime.Now.AddSeconds(timeout);
-            while (true)
-            {
-                if (System.IO.File.Exists(path)) return true;
-                if (DateTime.Now >= timeoutAt) return false;
-                await Task.Delay(10);
-            }
+            return Ok();
         }
     }
-    
 }

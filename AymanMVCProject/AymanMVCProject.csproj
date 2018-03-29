@@ -18,6 +18,8 @@
     <Content Remove="wwwroot\images\banner3.svg" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Forecast" />
+    <Folder Include="wwwroot\images" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
   <ItemGroup>

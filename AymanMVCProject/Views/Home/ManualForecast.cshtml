@@ -1,0 +1,158 @@
+﻿@{
+    Layout = "_Layout";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-select/dist/css/bootstrap-select.min.css"/>
+    <link rel="stylesheet" href="~/lib/seiyria-bootstrap-slider/dist/css/bootstrap-slider.min.css" />
+    <link rel="stylesheet" href="~/lib/toastr/toastr.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="~/css/site.css" rel="stylesheet"/>
+}
+
+<div id="update-assets-link" data-request-url="@Url.Action("UpdateAssets", "Home")"></div>
+<div id="symbols-list-link" data-request-url="@Url.Action("SymbolsList", "Home")"></div>
+<div id="manual-forecast-link" data-request-url="@Url.Action("ManualForecast", "Home")"></div>
+
+<div class="row wrapper">
+    <div class="col-sm-4 col-md-3 col-lg-3 pull-left">
+        
+        <div class="list-group ">
+            <span href="#" class="list-group-item active">
+                <a asp-action="Index" asp-controller="Home"><i class="fa fa-lg fa-arrow-left"></i></a> <span id="menu-span" class="pull-right">Menu</span>
+            </span>
+            <form>
+                <div class="col-md-12 list-group-item">
+                    <label>
+                        <input type="radio" value="useButtons" id="use-buttons" name="radio" class="select-control" checked> <h4 class="label-text">Use Radio Buttons</h4>
+                    </label>
+
+                    <div id="trigger-block">
+                        <label class="toggle label-radiobtn">
+                            <input type="radio" value="200" name="toggle" id="rb-200" class="select-toggle rb-less" checked> <span class="label-text">200</span>
+                        </label>
+
+                        <label class="toggle label-radiobtn">
+                            <input type="radio" value="230" name="toggle" id="rb-230" class="select-toggle rb-less"> <span class="label-text">230</span>
+                        </label>
+
+                        <label class="toggle label-radiobtn">
+                            <input type="radio" value="576" name="toggle" id="rb-576" class="select-toggle rb-more"> <span class="label-text">576</span>
+                        </label>
+
+                        <label class="toggle label-radiobtn">
+                            <input type="radio" value="720" name="toggle" id="rb-720"class="select-toggle rb-more"> <span class="label-text">720</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-12 list-group-item">
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            <label>
+                                <input type="radio" value="useSlider" id="use-slider" name="radio" class="select-control"> <h4 class="label-text">Use Slider</h4>
+                            </label>
+                        </div>
+                        <div class="col-md-3 col-md-offset-3">
+                            <input type="text" class="form-control pull-right" id="custom-slider">
+                        </div>
+                    </div>
+                    <div class="margin-top10" id="slider">
+                        <input id="ex13" data-slider-step="2" data-slider-min="0" type="text"/>
+                    </div>
+                </div>
+
+                <div class="col-md-12 list-group-item">
+                    <div class="input-group">
+                        <select class="selectpicker" data-live-search="true"></select>
+                        <span class="input-group-btn"><button type="button" id="update-assets" class="btn btn-info">Update</button></span>
+                    </div>
+                </div>
+                <div class="col-md-12 list-group-item ">
+                    <h4 class="label-text">Periods</h4>
+                    <div id="period-block">
+                        <label class="toggle label-radiobtn">
+                            <input type="radio" value="24" name="period" class="period-toggle per-24" checked> <span class="label-text">24</span>
+                        </label>
+
+                        <label class="toggle label-radiobtn">
+                            <input type="radio" value="72" name="period" class="period-toggle per-72"> <span class="label-text">72</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-12 list-group-item ">
+                    <h4 class="label-text">Add Seasonality</h4>
+                    <label class="add-seasonality col-md-12">
+                        <input id="seasonality-houly" type="checkbox" name="check"> <label class="label-text">Houly Seasonality</label>
+                    </label>
+                    <label class="add-seasonality col-md-12">
+                        <input id="seasonality-daily" type="checkbox" name="check"> <label class="label-text">Daily Seasonality</label>
+                    </label>
+                </div>
+
+                <div class="list-group-item col-md-12">
+                    <button type="button" id="make-forecast" class="btn btn-primary">FORECAST!</button>
+                    @*                    <button type="button" id="python-test" class="btn btn-warning">PYTHON!</button>*@
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-sm-8 col-md-8 col-lg-7">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#table-tab">Table</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#forecast-tab">Forecast</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#content-tab">Components</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane active container" id="table-tab">
+                <div class="pre-scrollable">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>ds</th>
+                            <th>yhat</th>
+                            <th>yhat_lower</th>
+                            <th>yhat_upper</th>
+                        </tr>
+                        </thead>
+                        <tbody id="table-content">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane container" id="forecast-tab">
+                <div class="pre-scrollable">
+                    <h2 id="indicator-text"></h2>
+                    <h2 class="col-md-offset-3" id="asset-name"></h2>
+                    <div id="forecast-place"></div>
+                </div>
+            </div>
+            
+            <div class="tab-pane container" id="content-tab">
+                <div class="pre-scrollable">
+                    <h2 class="col-md-offset-3">Components</h2>
+                    <div id="components-place"></div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/lib/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+    <script src="~/lib/seiyria-bootstrap-slider/dist/bootstrap-slider.min.js"></script>
+    <script src="~/lib/toastr/toastr.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+}

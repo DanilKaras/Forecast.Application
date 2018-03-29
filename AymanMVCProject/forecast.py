@@ -65,6 +65,8 @@ for i in range(0,25):
     newTicks.append(start)
     start += sub
 
+
+allAxes[plotPos].set_xticks(newTicks)
 @mpl.ticker.FuncFormatter
 def major_formatter(x, pos):
     if pos == 24:

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using DataCoin.Models;
 using Microsoft.AspNetCore.ApplicationInsights.HostingStartup;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -11,5 +12,6 @@ namespace AymanMVCProject.Models
         public string ForecastPath { get; set; }
         public string AssetName { get; set; }
         public int RequestsPerDay { get; set; }
+        public Indicator Indicator { get; set; }
     }
 }

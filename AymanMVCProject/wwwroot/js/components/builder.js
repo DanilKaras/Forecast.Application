@@ -20,6 +20,55 @@ var builder = (function () {
         }
     };
     
+    var wrapData = function () {
+        utils.loaderShow();
+
+        var hourlySeasonality = false;
+        var dailySeasonality = false;
+        var symbol = '';
+        var selectedGroup = '';
+        var dataHours = 0;
+        var periods = 0;
+        var postData = '';
+
+        selectedGroup = $('input[name=radio]:checked').val();
+        if(selectedGroup){
+            switch (selectedGroup) {
+                case utils.group.useButtons:
+                    dataHours = $('input[name=toggle]:checked').val();
+                    break;
+                case utils.group.useSlider:
+                    var $custom = $('#custom-slider').val();
+                    if ($custom && $custom !== 0) {
+                        dataHours = $custom;
+                    }
+                    else {
+                        dataHours = $('#ex13').slider('getValue');
+                    }
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            dataHours = $('input[name=toggle]:checked').val();
+        }
+        
+
+        symbol = $('.selectpicker option:selected').val();
+        hourlySeasonality = $('#seasonality-houly').is(':checked');
+        dailySeasonality = $('#seasonality-daily').is(':checked');
+
+        periods = $('input[name=period]:checked').val();
+
+        return {
+            symbol: symbol,
+            dataHours: dataHours,
+            periods: periods,
+            hourlySeasonality: hourlySeasonality,
+            dailySeasonality: dailySeasonality
+        }
+    };
+    
     var imgForecast = function (picPath) {
         if(picPath){
             var imgForecast = $('<img />', {
@@ -60,6 +109,30 @@ var builder = (function () {
         
     };
     
+    var indicator = function (indicator) {
+        var span = '';
+        if(indicator === utils.indicators.positive) {
+            span = $('<span />',{
+                class:'label label-success',
+                html:'Positive'
+            });
+        }
+        else if(indicator === utils.indicators.neutral){
+            span = $('<span />',{
+                class:'label label-default',
+                html:'Neutral'
+            });
+        }
+        else if(indicator === utils.indicators.negatine){
+            span = $('<span />',{
+                class:'label label-danger',
+                html:'Negative'
+            });
+        }
+        $('#indicator-text').html(span);
+    };
+    
+    
     var toastrAlert = function (requestNum) {
         if(requestNum){
             var $toastrMessage = 'You made '+ requestNum +' requests today!';
@@ -78,12 +151,20 @@ var builder = (function () {
         }
     };
     
+    var showRequestForToday = function (data) {
+        if(data){
+            var message = "Requests: " + data.requestCount;
+            $('#control-header').html(message);  
+        }  
+    };
+    
+    
     var toastrConfig = function (){
         toastr.options = {
-            "closeButton": false,
+            "closeButton": true,
             "debug": false,
             "newestOnTop": false,
-            "progressBar": true,
+            "progressBar": false,
             "positionClass": "toast-bottom-right",
             "preventDuplicates": false,
             "onclick": null,
@@ -104,6 +185,9 @@ var builder = (function () {
         imgComponents: imgComponents,
         assetName: assetName,
         toastrAlert: toastrAlert,
-        toastrConfig: toastrConfig
+        toastrConfig: toastrConfig,
+        indicator: indicator,
+        showRequestForToday: showRequestForToday,
+        wrapData: wrapData
     };
 })();

@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using AymanMVCProject.Models;
@@ -51,6 +52,8 @@ namespace DataCoin.Utility
         
         public List<string> ReadSymbolsFromFile()
         {
+            if (!File.Exists(filePath)) return null;
+            
             var readText = File.ReadAllText(filePath);
             var strArray = readText.Split(',').ToList();
             return strArray;
