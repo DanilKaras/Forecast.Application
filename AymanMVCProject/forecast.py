@@ -51,7 +51,9 @@ future = m.make_future_dataframe(periods = pers, freq='H')
 forecast = m.predict(future)
 fig = m.plot(forecast, xlabel='', ylabel='   ')
 fig.gca().yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.5f}'))
-
+tt = fig.gca().get_xticks()
+mn = tt[0]
+mx = tt[-1]
 
 cmp = m.plot_components(forecast)
 allAxes = cmp.get_axes()
@@ -81,3 +83,5 @@ allAxes[0].xaxis.set_major_formatter(formatter)
 forecast.to_csv(path+'/out.csv')
 fig.savefig(path+'/forecast.png')
 cmp.savefig(path+'/components.png', dpi=200)
+
+print 'FirstLastScale:{},{}'.format(mn, mx)

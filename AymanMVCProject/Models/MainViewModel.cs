@@ -13,5 +13,6 @@ namespace AymanMVCProject.Models
         public string AssetName { get; set; }
         public int RequestsPerDay { get; set; }
         public Indicator Indicator { get; set; }
+        public List<ExcelLog> Report { get; set; }
     }
 }

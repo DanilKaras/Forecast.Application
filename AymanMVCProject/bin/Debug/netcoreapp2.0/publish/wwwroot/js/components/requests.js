@@ -3,7 +3,7 @@ var requests = (function () {
     var updateAssets = function () {
         utils.loaderShow();
         $.ajax({
-            url: utils.domain + '/UpdateAssets',
+            url: utils.updateAssets,
             type: 'GET',
             success: function () {
                 $('.selectpicker option').remove();
@@ -18,7 +18,7 @@ var requests = (function () {
     
     var selecter = function () {
         $.ajax({
-            url: utils.domain + '/SymbolsList',
+            url: utils.symbolsList,
             type: 'GET',
             success: function (data) {
                 if (data.symbols){
@@ -38,11 +38,11 @@ var requests = (function () {
     };
     
     
-    var sendToServer = function (data) {
+    var sendToServerManual = function (data) {
         if (data){
             $.ajax({
-                url: utils.domain + '/Index',
-                type:'Post',
+                url: utils.manualForecast,
+                type:'POST',
                 data: data,
                 success: function (data) {
                     onSuccessLoad(data);
@@ -61,13 +61,105 @@ var requests = (function () {
         }
         else{
             toastr.error("Cannot send data to server");
+            utils.loaderHide();
         }
+    };
+
+    var sendToServerAuto = function (data) {
+        if(data){
+            $.ajax({
+                url: utils.autoForecastPost,
+                type:'POST',
+                data: data,
+                success: function (data) {
+                    onSuccessLoadAuto(data);
+                    utils.loaderHide();
+                },
+                error: function (error) {
+                    utils.loaderHide();
+                    var message = error.responseJSON.message;
+                    if(error.responseJSON.requestCount){
+                        message += " Made requests: "+ error.responseJSON.requestCount;
+                    }
+                    alert(message);
+                }
+            })
+        }  
+        else{
+          toastr.error("Cannot send data to server");
+          utils.loaderHide();
+        }
+    };
+    
+    var requestCount = function () {
+        $.ajax({
+            url: utils.requestForToday,
+            type:'GET',
+            success: function (data) {
+                builder.showRequestForToday(data);
+                utils.loaderHide();
+            },
+            error: function (error) {
+                utils.loaderHide();
+            }
+        })
+    };
+    
+    var showForecastElements = function (data) {
+        $.ajax({
+            url: utils.getForecastParts,
+            type:'GET',
+            data: data,
+            success: function (data) {
+                onSuccessLoadForecastElements(data);
+                utils.loaderHide();
+            },
+            error: function (error) {
+                utils.loaderHide();
+            }
+        })
+    };
+    
+    var latestAssets = function () {
+        $.ajax({
+            url: utils.getLatestAssets,
+            type:'GET',
+            success: function (data) {
+                onSuccessLoadAuto(data);
+                utils.loaderHide();
+            },
+            error: function (error) {
+                alert(error.responseJSON.message);
+                utils.loaderHide();
+            }
+        })
+        
+    };
+
+    var instantForecast = function () {
+        utils.loaderShow();
+        $.ajax({
+            url: utils.instantForecast,
+            type:'GET',
+            success: function (data) {
+                if (data){
+                    builder.instantForecast(data);
+                }
+                else{
+                    alert('No BTC data!')
+                }
+            },
+            error: function (error) {
+                alert(error.responseJSON.message);
+                utils.loaderHide();
+            }
+        })
     };
     
     var testPython = function () {
         $.ajax({
-            url: utils.domain + '/TestLink',
-            type:'Get',
+            url: utils.getForecastParts,
+            type:'GET',
             success: function (data) {
                 alert('success!');
                 utils.loaderHide();
@@ -78,10 +170,16 @@ var requests = (function () {
             }
         })
     };
+    
     return {
         updateAssets: updateAssets,
         selecter: selecter,
-        sendToServer: sendToServer,
-        testPython: testPython
+        sendToServerManual: sendToServerManual,
+        requestCount: requestCount,
+        sendToServerAuto: sendToServerAuto,
+        testPython: testPython,
+        showForecastElements: showForecastElements,
+        latestAssets: latestAssets,
+        instantForecast: instantForecast
     };
 })();

@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading;
 using AymanMVCProject.Models;
 using DataCoin.Models;
 using Microsoft.Extensions.Options;
+using OfficeOpenXml;
 
 namespace DataCoin.Operations
 {
@@ -22,14 +18,17 @@ namespace DataCoin.Operations
         private readonly string env;
         private readonly string countInfo;
         private int currentCounts;
-        private readonly object locker;
+        private static object locker;
         private readonly string manual;
         private readonly string automatic;
         private readonly string fixedAssets;
         private readonly string dirNegative;
         private readonly string dirNeutral;
         private readonly string dirPositive;
+        private readonly string dirStrongPositive;
         private readonly string subFolderForAuto;
+        private readonly string instant;
+        private static int timeName;
         public string Location => location;
         public string AsstesLocation => Path.Combine(env, fixedAssets);
         public int CurrentCounts => GetRequestCount();
@@ -40,6 +39,14 @@ namespace DataCoin.Operations
 
         public string OutForecast => "forecast.png";
 
+        public string DirNegative => dirNegative;
+
+        public string DirPositive => dirPositive;
+
+        public string DirNeutral => dirNeutral;
+
+        public string DirStrongPositive => dirStrongPositive;
+
         public DirectoryManager(IOptions<ApplicationSettings> services, string env)
         {
             todayDate = DateTime.Today.Date.ToString("dd-MM-yy");          
@@ -47,23 +54,32 @@ namespace DataCoin.Operations
             this.env = env;
             manual = _services.Value.ManualFolder;
             automatic = _services.Value.AutoFolder;
+            instant = _services.Value.InstantFolder;
+            locker = new object();
             location = Dir();
             countInfo = _services.Value.CounterFile;
             currentCounts = 0;
-            locker = new ReaderWriterLock();
             fixedAssets = _services.Value.AssetFile;
-            dirNegative = "Negative";
-            dirNeutral = "Neutral";
-            dirPositive = "Positive";
-            subFolderForAuto = DateTime.Now.ToString("T").Replace(':', '-');
+            dirNegative = Indicator.Negative.ToString();
+            dirNeutral = Indicator.Neutral.ToString();
+            dirPositive = Indicator.Positive.ToString();
+            dirStrongPositive = Indicator.StrongPositive.ToString(); 
+            
+            subFolderForAuto = DateTime.Now.ToString("HH:mm:ss").Replace(':', '-');
+            timeName = 12;
         }
-
+        public DirectoryManager()
+        {
+            
+        }
         private string Dir()
         {
+            
             var rootLocation = Path.Combine(Directory.GetCurrentDirectory(), _services.Value.ForecastDir);
             var newLocation = Path.Combine(rootLocation, todayDate);
             var exist = Directory.Exists(newLocation);
-            if (!exist)
+            if (exist) return newLocation;
+            lock (locker)
             {
                 Directory.CreateDirectory(newLocation);
             }
@@ -72,7 +88,7 @@ namespace DataCoin.Operations
         
         public string GenerateForecastFolder(string assetId, int period, DirSwitcher switcher)
         {
-            var timeNow = DateTime.Now.ToString("hh:mm:ss").Replace(':', '.');
+            var timeNow = DateTime.Now.ToString("HH:mm:ss").Replace(':', '.');
             var newFolder = $"{assetId}_{period}_{timeNow}";
             string newLocation;
             switch (switcher)
@@ -81,17 +97,29 @@ namespace DataCoin.Operations
                     newLocation = Path.Combine(this.location, automatic, subFolderForAuto, newFolder);
                     break;
                 case DirSwitcher.Manual:
-                    newLocation = Path.Combine(this.location, manual ,newFolder);
+                    newLocation = Path.Combine(this.location, manual, newFolder);
+                    break;
+                case DirSwitcher.Instant:
+                    newLocation = Path.Combine(this.location, instant, newFolder);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(switcher), switcher, null);
             }
-            var exist = Directory.Exists(newLocation);
-            if (!exist)
-            {
-                Directory.CreateDirectory(newLocation);
-            }
 
+            try
+            {
+                var exist = Directory.Exists(newLocation);
+                if (exist) return newLocation;
+                lock (locker)
+                {
+                    Directory.CreateDirectory(newLocation);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Couldn't generate the Forecast Folder");
+            }
+           
             return newLocation;
         }
 
@@ -106,6 +134,9 @@ namespace DataCoin.Operations
                 case DirSwitcher.Manual:
                     loc = Path.Combine(location, manual);
                     break;
+                case DirSwitcher.Instant:
+                    loc = Path.Combine(location, instant);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(switcher), switcher, null);
             }
@@ -116,8 +147,8 @@ namespace DataCoin.Operations
         {
             string tmpCurrent;
             string path;
-            
-            var tmpTodayFolder= location.Replace("//", "/").Split('/').Last();
+            //TODO make location crossplatform
+            var tmpTodayFolder = location.Replace("//", "/").Split('/').Last();
             switch (switcher)
             {
                 case DirSwitcher.Auto:
@@ -127,6 +158,10 @@ namespace DataCoin.Operations
                 case DirSwitcher.Manual:
                     tmpCurrent = LastDir(Path.Combine(location, manual)).Replace("//", "/").Split('/').Last();
                     path = Path.Combine(manual, tmpCurrent);
+                    break;
+                case DirSwitcher.Instant:
+                    tmpCurrent = LastDir(Path.Combine(location, instant)).Replace("//", "/").Split('/').Last();
+                    path = Path.Combine(instant, tmpCurrent);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(switcher), switcher, null);
@@ -142,7 +177,7 @@ namespace DataCoin.Operations
             foreach (var subdir in Directory.GetDirectories(dir))
             {
                 var fi1 = new DirectoryInfo(subdir);
-                var created = fi1.LastWriteTime;
+                var created = fi1.CreationTime;
 
                 if (created <= lastHigh) continue;
                 highDir = subdir;
@@ -162,31 +197,13 @@ namespace DataCoin.Operations
                 File.WriteAllText(counter, 0.ToString());
             }
 
-            try
-            {
-                using(var reader = new StreamReader(System.IO.File.OpenRead(counter)))
-                {
-                    while (!reader.EndOfStream)
-                    {
-                        var line = reader.ReadLine();
-                        var requestsPerDay = line.Split(',').FirstOrDefault() ?? default(int).ToString();
-                        currentCounts = Convert.ToInt32(requestsPerDay) + count;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-
             lock (locker)
             {
-                File.WriteAllText(counter, currentCounts.ToString());
+                File.WriteAllText(counter, count.ToString());
             }
         }
 
-        private int GetRequestCount()
+        public int GetRequestCount()
         {
             var counter = Path.Combine(location, countInfo);
             var exist = File.Exists(counter);
@@ -213,14 +230,15 @@ namespace DataCoin.Operations
                 throw;
             }
 
-            return default(int);
+            return 0;
         }
 
-        public void RemoveFolder(string path)
+        public static void RemoveFolder(string path)
         {
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path)) return;
+            lock (locker)
             {
-                Directory.Delete(path, true);
+                Directory.Delete(path, true); 
             }
         }
 
@@ -242,6 +260,9 @@ namespace DataCoin.Operations
                         break;
                     case Indicator.Negative:
                         moveTo = CreateSubDir(getRootPath, dirNegative);
+                        break;
+                    case Indicator.StrongPositive:
+                        moveTo = CreateSubDir(getRootPath, dirStrongPositive);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(switcher), switcher, null);
@@ -266,39 +287,186 @@ namespace DataCoin.Operations
         private static string CreateSubDir(string path, string folderName)
         {
             var newPath = Path.Combine(path, folderName);
-            var exist = Directory.Exists(newPath);
-            
-            if (exist) return path;
-            
-            Directory.CreateDirectory(newPath);
+            bool exist;
+            lock (locker)
+            {
+                exist = Directory.Exists(newPath);
+            }
+
+            if (exist) return newPath;
+            lock (locker)
+            {
+                Directory.CreateDirectory(newPath);
+            }
             return newPath;
 
         }
 
-        private static void MoveFolderToDir(string moveFrom, string MoveTo, string oldFolderName)
+        private static void MoveFolderToDir(string moveFrom, string moveTo, string oldFolderName)
         {
-            var folderWithOldName = CreateSubDir(MoveTo, oldFolderName);
-            var files = System.IO.Directory.GetFiles(moveFrom);
+            var folderWithOldName = CreateSubDir(moveTo, oldFolderName);
+            string[] files;
+            lock (locker)
+            {
+                files = Directory.GetFiles(moveFrom);
+            }
             //Directory.Move(moveFrom, MoveTo);
             foreach (var s in files)
             {
-                
-                var fileName = System.IO.Path.GetFileName(s);
-                var destFile = System.IO.Path.Combine(folderWithOldName, fileName);
-                File.Copy(s, destFile, true);
+                lock (locker)
+                {
+                    var fileName = Path.GetFileName(s);
+                    var destFile = Path.Combine(folderWithOldName, fileName);
+                    File.Copy(s, destFile, true);
+                }
             }
-            
-            if(Directory.Exists(moveFrom))
+
+            lock (locker)
             {
-                try
+                if (!Directory.Exists(moveFrom)) return;
+            }
+
+            try
+            {
+                lock (locker)
                 {
                     Directory.Delete(moveFrom, true);
-                }
+                }   
+            }
+            catch (IOException e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
 
-                catch (IOException e)
+        public static List<string> GetFolderNames(string dir)
+        {
+            var names = new List<string>();
+            if (!Directory.Exists(dir)) return names;
+            var files = Directory.GetDirectories(dir);
+            foreach (var folder in files)
+            {
+                var lastFolder = folder.Split(Path.DirectorySeparatorChar).Last();
+                var name = lastFolder.Substring(0, lastFolder.Length - timeName);
+                names.Add(name);
+            }
+
+            return names;
+        }
+        
+        public static string GetForecastFolderByName(string dir, string assetName)
+        {
+            try
+            {
+                string name;
+                var files = Directory.GetDirectories(dir);
+                return files.FirstOrDefault(x => x.Contains(assetName)).Split(Path.DirectorySeparatorChar).Last();
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Couldn't Get Forecast Folder in {dir} by Name {assetName}");
+            }           
+        }
+
+
+        public static bool IsFolderExist(string path)
+        {
+            return Directory.Exists(path);
+        }
+
+        public static void WriteLogToExcel(FileInfo file, IEnumerable<ExcelLog> log)
+        {
+            using (var package = new ExcelPackage(file))
+            {
+                // add a new worksheet to the empty workbook
+                
+                var worksheet = package.Workbook.Worksheets.Add("Sheet1");
+
+                var rowNumber = 1;
+                foreach (var subLog in log)
                 {
-                    throw new Exception(e.Message);
+                    worksheet.Cells[rowNumber, 1].Value = subLog.AssetName;
+                    worksheet.Cells[rowNumber, 2].Value = subLog.Log;   
+                    worksheet.Cells[rowNumber, 3].Value = subLog.Rate;
+                    rowNumber++;
                 }
+               
+                package.Save();
+            }
+        }
+        
+        public void WriteAssetsToExcel(string path, IEnumerable<string> asstes)
+        {
+            var file = new FileInfo(path);
+            using (var package = new ExcelPackage(file))
+            {
+                // add a new worksheet to the empty workbook
+                var worksheet = package.Workbook.Worksheets.Add("Sheet1");
+
+                var rowNumber = 1;
+                foreach (var asset in asstes)
+                {
+                    worksheet.Cells[rowNumber, 1].Value = asset;
+                               
+                    rowNumber++;
+                }
+               
+                package.Save();
+            }
+        }
+        
+        public static List<string> ReadAssetsFromExcel(string path)
+        {
+            try
+            {
+                var file = new FileInfo(path);
+                var rawText = new List<string>();
+                using (var package = new ExcelPackage(file))
+                {       
+                    var worksheet = package.Workbook.Worksheets[1];
+                    var rowCount = worksheet.Dimension.Rows;          
+                    for (var row = 1; row <= rowCount; row++)
+                    {
+                        rawText.Add(worksheet.Cells[row, 1].Value.ToString());                    
+                    }
+                }
+                return rawText;
+            }
+            catch (Exception)
+            {
+              
+                throw new Exception("Symbols file is empty");
+            }
+            
+        }
+
+        public List<ExcelLog> ReadLog(string path)
+        {
+            try
+            {
+                if (!File.Exists(path)) return null;
+                var excelLog = new List<ExcelLog>();
+                var file = new FileInfo(path);
+                using (var package = new ExcelPackage(file))
+                {       
+                    var worksheet = package.Workbook.Worksheets[1];
+                    var rowCount = worksheet.Dimension.Rows;          
+                    for (var row = 1; row <= rowCount; row++)
+                    {
+                        excelLog.Add(new ExcelLog()
+                        {
+                            AssetName = worksheet.Cells[row, 1].Value.ToString(),
+                            Log =  worksheet.Cells[row, 2].Value.ToString(),
+                            Rate = worksheet.Cells[row,3].Value.ToString()
+                        });                 
+                    }
+                }
+            
+            return excelLog;
+            }
+            catch (Exception)
+            {
+                throw new Exception("Log file is empty");
             }
         }
     }

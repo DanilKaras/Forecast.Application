@@ -21,6 +21,9 @@
                 <a asp-action="Index" asp-controller="Home"><i class="fa fa-lg fa-arrow-left"></i></a> <span id="menu-span" class="pull-right">Menu</span>
             </span>
             <form>
+@*                <div class="col-md-12 list-group-item">*@
+@*                    @await Html.PartialAsync("~/Views/Shared/_BTCForecast.cshtml")*@
+@*                </div>*@
                 <div class="col-md-12 list-group-item">
                     <label>
                         <input type="radio" value="useButtons" id="use-buttons" name="radio" class="select-control" checked> <h4 class="label-text">Use Radio Buttons</h4>
@@ -89,8 +92,15 @@
                     </label>
                 </div>
 
-                <div class="list-group-item col-md-12">
-                    <button type="button" id="make-forecast" class="btn btn-primary">FORECAST!</button>
+                <div class="list-group-item col-md-12 col-lg-12">
+                    <div class="row">
+                        <div class="col-md-1 col-lg-1 col-lg-offset-4 col-md-offset-4">
+                            <button type="button" id="make-forecast" class="btn btn-primary">FORECAST!</button>
+                        </div>
+                        <div class="pull-right col-md-3 col-lg-3" id="instant-placeholder">
+                            @await Html.PartialAsync("~/Views/Shared/_BTCForecast.cshtml")
+                        </div>
+                    </div>
                     @*                    <button type="button" id="python-test" class="btn btn-warning">PYTHON!</button>*@
                 </div>
             </form>

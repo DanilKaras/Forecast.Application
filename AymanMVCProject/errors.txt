@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "forecast.py", line 16, in <module>
-    pers = int(sys.argv[2])
-ValueError: invalid literal for int() with base 10: 'False'

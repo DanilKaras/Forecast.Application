@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Text;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using AymanMVCProject.Models;
 using DataCoin.Models;
 using DataCoin.Operations;
@@ -25,7 +26,7 @@ namespace DataCoin.Utility
         private readonly string fileName;
         private IOptions<ApplicationSettings> _service;
         private DirectoryManager manager;
-        
+        private readonly object locker;
         public LoadData(IOptions<ApplicationSettings> service, string coinName, int period, string currentLocation)
         {
             _service = service;
@@ -40,23 +41,51 @@ namespace DataCoin.Utility
             operations = new CoreOperations(url, coinName, currentLocation, service);
             manager = new DirectoryManager(service, currentLocation);
             fileName = "data.csv";
+            locker = new object();
         }
 
-        public void UploadHistoryFromServer()
+        public bool UploadHistoryFromServer()
         {
             var dtMin = dateStart;
             var dtMax = dateEnd;
-            operations.FillModel(url, dtMin, dtMax, key, ref modelSet);
 
-            var isSomethingMissing = CoreOperations.IsMissingData(period, modelSet);
-            
+            operations.FillModel(url, dtMin, dtMax, key, ref modelSet, DirSwitcher.Manual);
+            var isSomethingMissing = CoreOperations.IsMissingData(period, modelSet); 
             if (isSomethingMissing)
             {
-                operations.FillMissingData(period, dateStart, key, ref modelSet);
+                return operations.FillMissingData(period, dateStart, key, ref modelSet, DirSwitcher.Manual);
             }
+
+            return true;
         }
 
-        public void LoadToCsv(string location)
+        public List<List<AssetModel>> UploadHistoryFromServerAuto()
+        {
+            var dtMin = dateStart;
+            var dtMax = dateEnd;
+
+            if (!operations.FillModel(url, dtMin, dtMax, key, ref modelSet, DirSwitcher.Auto))
+            {
+                modelSet.Clear();
+                return modelSet;
+            }
+            
+            
+            if (!modelSet.Any()) return modelSet;
+            var isSomethingMissing = CoreOperations.IsMissingData(period, modelSet);
+            if (isSomethingMissing)
+            {
+                if (!operations.FillMissingData(period, dateStart, key, ref modelSet, DirSwitcher.Auto))
+                {
+                    modelSet.Clear();
+                    return modelSet;
+                }
+            }
+
+            return modelSet;
+        }
+        
+        public bool LoadToCsv(string location)
         {   
             var csv = new StringBuilder();
             const string fs = "Time";
@@ -108,8 +137,22 @@ namespace DataCoin.Utility
             }
 
             var saveTo = Path.Combine(location, fileName);
+            if (csv.Length == 0)
+            {
+                lock (locker)
+                {
+                    DirectoryManager.RemoveFolder(saveTo);
+                    return false;
+                }
+            }
+
+            lock (locker)
+            {
+                File.WriteAllText(saveTo, csv.ToString());
+                return true;
+            }
             
-            File.WriteAllText(saveTo, csv.ToString());
+
         }
     }
 }

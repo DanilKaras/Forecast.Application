@@ -290,7 +290,7 @@ input[type="radio"]:disabled + .label-text:before{
 
 h2#indicator-text {
     position: absolute;
-    right: 80%;
+    /*right: 80%;*/
 }
 
 .fa-arrow-left{
@@ -340,4 +340,20 @@ h2#indicator-text {
     font-weight: 900;
     font-size: 120%;
     margin-left: 75%;
+}
+
+#get-latest-assets-link{
+    position: absolute;
+}
+
+#btc-forecast{
+    color: #fd7e14
+}
+
+#instant-placeholder{
+    margin-top: 3px;
+}
+
+#btc-forecast:hover{
+    color: #495057
 }

@@ -77,6 +77,30 @@
         lessToggle = false;
         moreToggle = true;
     });
+
+    $('#show-positive').click(function(){
+        builder.wrapForForecastElements('positive-picker', utils.indicators.positive);
+    });
+
+    $('#show-neutral').click(function(){
+        builder.wrapForForecastElements('neutral-picker', utils.indicators.neutral);
+    });
+
+    $('#show-negative').click(function(){
+        builder.wrapForForecastElements('negative-picker', utils.indicators.negative);
+    });
+
+    $('#show-strong-positive').click(function(){
+        builder.wrapForForecastElements('strong-positive-picker', utils.indicators.superPositive);
+    });
+    
+    $('#get-latest-assets-link').click(function () {
+        requests.latestAssets();
+    });
+    
+    $('#btc-forecast').click(function(){
+        requests.instantForecast(); 
+    });
     
     var onSuccessLoad = function (data) {
         if (data) {
@@ -89,7 +113,30 @@
         }
     };
 
+    var onSuccessLoadForecastElements = function (data) {
+        if (data) {
+            builder.table(data.table);
+            builder.imgForecast(data.forecastPath);
+            builder.imgComponents(data.componentsPath);
+            builder.assetName(data.assetName);
+            builder.indicator(data.indicator);
+            builder.toastrAlertUpdated();
+        }
+    };
 
+    var onSuccessLoadAuto = function (data) {
+        if (data){
+            builder.indicatorPicker(data.strongPositiveAssets, 'strong-positive-picker');
+            builder.indicatorPicker(data.positiveAssets, 'positive-picker');
+            builder.indicatorPicker(data.neutralAssets, 'neutral-picker');
+            builder.indicatorPicker(data.negativeAssets, 'negative-picker');
+            builder.reportTable(data.report);
+            if (data.requestCount){
+                builder.toastrAlert(data.requestCount);
+            }
+            
+        }
+    };
     var seasonalityEnable = function () {
         var $daily = $('#seasonality-daily');
         var $hourly = $('#seasonality-houly');

@@ -33,50 +33,31 @@
 
 
     $('#make-forecast').click(function () {
-        utils.loaderShow();
-
-        var hourlySeasonality = false;
-        var dailySeasonality = false;
-        var symbol = '';
-        var selectedGroup = '';
-        var dataHours = 0;
-        var periods = 0;
-        var postData = '';
-
-        selectedGroup = $('input[name=radio]:checked').val();
-
-        switch (selectedGroup) {
-            case utils.group.useButtons:
-                dataHours = $('input[name=toggle]:checked').val();
-                break;
-            case utils.group.useSlider:
-                var $custom = $('#custom-slider').val();
-                if ($custom && $custom !== 0) {
-                    dataHours = $custom;
-                }
-                else {
-                    dataHours = $('#ex13').slider('getValue');
-                }
-                break;
-            default:
-                break;
-        }
-
-        symbol = $('.selectpicker option:selected').val();
-        hourlySeasonality = $('#seasonality-houly').is(':checked');
-        dailySeasonality = $('#seasonality-daily').is(':checked');
-
-        periods = $('input[name=period]:checked').val();
-
-        postData = {
-            symbol: symbol,
-            dataHours: dataHours,
-            periods: periods,
-            hourlySeasonality: hourlySeasonality,
-            dailySeasonality: dailySeasonality
+        var valuesFromPage = builder.wrapData();
+        
+        var postData = {
+            symbol: valuesFromPage.symbol,
+            dataHours: valuesFromPage.dataHours,
+            periods: valuesFromPage.periods,
+            hourlySeasonality: valuesFromPage.hourlySeasonality,
+            dailySeasonality: valuesFromPage.dailySeasonality
         };
-        //send
-        requests.sendToServer(postData);
+        
+        requests.sendToServerManual(postData);
+    });
+    
+    
+    $('#run-auto-forecast').click(function () {
+        var valuesFromPage = builder.wrapData();
+        
+        var postData = {
+            dataHours: valuesFromPage.dataHours,
+            periods: valuesFromPage.periods,
+            hourlySeasonality: valuesFromPage.hourlySeasonality,
+            dailySeasonality: valuesFromPage.dailySeasonality
+        };
+
+        requests.sendToServerAuto(postData);
     });
     
     $('.rb-less').click(function () {
@@ -96,6 +77,30 @@
         lessToggle = false;
         moreToggle = true;
     });
+
+    $('#show-positive').click(function(){
+        builder.wrapForForecastElements('positive-picker', utils.indicators.positive);
+    });
+
+    $('#show-neutral').click(function(){
+        builder.wrapForForecastElements('neutral-picker', utils.indicators.neutral);
+    });
+
+    $('#show-negative').click(function(){
+        builder.wrapForForecastElements('negative-picker', utils.indicators.negative);
+    });
+
+    $('#show-strong-positive').click(function(){
+        builder.wrapForForecastElements('strong-positive-picker', utils.indicators.superPositive);
+    });
+    
+    $('#get-latest-assets-link').click(function () {
+        requests.latestAssets();
+    });
+    
+    $('#btc-forecast').click(function(){
+        requests.instantForecast(); 
+    });
     
     var onSuccessLoad = function (data) {
         if (data) {
@@ -108,22 +113,49 @@
         }
     };
 
-
-    var seasonalityEnable = function () {
-        if (!$('#seasonality-daily').is(':checked')){
-            $('#seasonality-daily').click();
+    var onSuccessLoadForecastElements = function (data) {
+        if (data) {
+            builder.table(data.table);
+            builder.imgForecast(data.forecastPath);
+            builder.imgComponents(data.componentsPath);
+            builder.assetName(data.assetName);
+            builder.indicator(data.indicator);
+            builder.toastrAlertUpdated();
         }
-        if (!$('#seasonality-houly').is(':checked')){
-            $('#seasonality-houly').click();
+    };
+
+    var onSuccessLoadAuto = function (data) {
+        if (data){
+            builder.indicatorPicker(data.strongPositiveAssets, 'strong-positive-picker');
+            builder.indicatorPicker(data.positiveAssets, 'positive-picker');
+            builder.indicatorPicker(data.neutralAssets, 'neutral-picker');
+            builder.indicatorPicker(data.negativeAssets, 'negative-picker');
+            builder.reportTable(data.report);
+            if (data.requestCount){
+                builder.toastrAlert(data.requestCount);
+            }
+            
+        }
+    };
+    var seasonalityEnable = function () {
+        var $daily = $('#seasonality-daily');
+        var $hourly = $('#seasonality-houly');
+        if (!$daily.is(':checked')){
+            $daily.click();
+        }
+        if (!$hourly.is(':checked')){
+            $hourly.click();
         }
     };
     
     var seasonalityDisable = function () {
-        if ($('#seasonality-daily').is(':checked')){
-            $('#seasonality-daily').click();
+        var $daily = $('#seasonality-daily');
+        var $hourly = $('#seasonality-houly');
+        if ($daily.is(':checked')){
+            $daily.click();
         }
-        if ($('#seasonality-houly').is(':checked')){
-            $('#seasonality-houly').click();
+        if ($hourly.is(':checked')){
+            $hourly.click();
         }
     };
     

@@ -53,8 +53,8 @@ namespace AymanMVCProject
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(
-                    Path.Combine(Directory.GetCurrentDirectory(), "Forecast")),
-                RequestPath = "/Forecast"
+                    Path.Combine(Directory.GetCurrentDirectory(), appSetting)),
+                RequestPath = Path.DirectorySeparatorChar + appSetting
             });
             app.UseMvc(routes =>
             {

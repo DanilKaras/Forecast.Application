@@ -9,9 +9,9 @@ var builder = (function () {
                 $content += "<tr><td>" +
                     table[i].id+"</td><td>"+
                     table[i].ds+"</td><td>"+
-                    table[i].yhat+"</td><td>"+
-                    table[i].yhatLower+"</td><td>"+
-                    table[i].yhatUpper+"</td></tr>";
+                    utils.fixedOutput(table[i].yhat)+"</td><td>"+
+                    utils.fixedOutput(table[i].yhatLower)+"</td><td>"+
+                    utils.fixedOutput(table[i].yhatUpper)+"</td></tr>";
             }
             $('#table-content').html($content);
         }
@@ -69,6 +69,24 @@ var builder = (function () {
         }
     };
     
+    var wrapForForecastElements = function (pickerName, indicatorVal) {
+        var indicator = indicatorVal;
+        var assetName = $('#'+pickerName).find('option:selected').val();
+        var periods = $('input[name=period]:checked').val();
+        var data = {
+            indicator: indicator,
+            assetName: assetName,
+            periods: periods
+        };
+        var allow = true;
+        for (var prop in data) {
+            if(!data[prop] && data[prop]!== 0) allow = false;
+        }
+        if(allow){
+            requests.showForecastElements(data);
+        }
+    };
+    
     var imgForecast = function (picPath) {
         if(picPath){
             var imgForecast = $('<img />', {
@@ -113,7 +131,7 @@ var builder = (function () {
         var span = '';
         if(indicator === utils.indicators.positive) {
             span = $('<span />',{
-                class:'label label-success',
+                class:'label label-info',
                 html:'Positive'
             });
         }
@@ -123,10 +141,16 @@ var builder = (function () {
                 html:'Neutral'
             });
         }
-        else if(indicator === utils.indicators.negatine){
+        else if(indicator === utils.indicators.negative){
             span = $('<span />',{
                 class:'label label-danger',
                 html:'Negative'
+            });
+        }
+        else if (indicator === utils.indicators.superPositive){
+            span = $('<span />',{
+                class:'label label-success',
+                html:'Strong Positive'
             });
         }
         $('#indicator-text').html(span);
@@ -150,6 +174,10 @@ var builder = (function () {
             toastr.warning("No number of requests per day")
         }
     };
+
+    var toastrAlertUpdated = function () {
+        toastr.success('Forecast by the asset has been successfully updated');
+    };
     
     var showRequestForToday = function (data) {
         if(data){
@@ -158,6 +186,107 @@ var builder = (function () {
         }  
     };
     
+    var indicatorPicker = function (data, pickerId) {
+        var picker = $('#'+pickerId);
+        picker.empty();
+        if(data){
+            var jsonData = data;
+            for (var i = 0; i < jsonData.length; i++) {
+                picker.append('<option value="' + jsonData[i] + '">' + jsonData[i] + '</option>')
+            }
+            picker.selectpicker('refresh');
+        }    
+    };
+    
+    var reportTable = function (data) {
+        if (data){
+            var $report = '';
+            for(var i = 0; i < data.length; i++)
+            {
+                $report += '<tr>';
+                
+                if(data[i].log === utils.logs.negative){
+                    $report += '<td class="danger">' + (i+1) + '</td>';
+                    $report += '<td class="danger">' + data[i].assetName + '</td>';
+                    $report += '<td class="danger">' + data[i].log + '</td>';
+                    $report += '<td class="danger">' + data[i].rate + '</td>';
+                } else if (data[i].log === utils.logs.positive){
+                    $report += '<td class="info">' + (i+1) + '</td>';
+                    $report += '<td class="info">' + data[i].assetName + '</td>';
+                    $report += '<td class="info">' + data[i].log + '</td>';
+                    $report += '<td class="info">' + data[i].rate + '</td>';
+                } else if (data[i].log === utils.logs.strongPositive){
+                    $report += '<td class="success">' + (i+1) + '</td>';
+                    $report += '<td class="success">' + data[i].assetName + '</td>';
+                    $report += '<td class="success">' + data[i].log + '</td>';
+                    $report += '<td class="success">' + data[i].rate + '</td>';
+                } else if (data[i].log === utils.logs.neutral){
+                    $report += '<td class="active">' + (i+1) + '</td>';
+                    $report += '<td class="active">' + data[i].assetName + '</td>';
+                    $report += '<td class="active">' + data[i].log + '</td>';
+                    $report += '<td class="active">' + data[i].rate + '</td>';
+                } else if (data[i].log === utils.logs.zeroRezults){
+                    $report += '<td class="warning">' + (i+1) + '</td>';
+                    $report += '<td class="warning">' + data[i].assetName + '</td>';
+                    $report += '<td class="warning">' + data[i].log + '</td>';
+                    $report += '<td class="warning">' + data[i].rate + '</td>';
+                }
+                $report += '</tr>';
+            }
+            
+            $('#table-report-content').html($report);
+        }
+    };
+    
+    var instantForecast = function (data) {
+        
+        utils.modalWindow.find('.modal-title').html(data.assetName);
+        
+        if(data.forecastPath){
+            var imgForecast = $('<img />', {
+                id: 'instant-forecast',
+                src: data.forecastPath,
+                class: "img-responsive",
+                alt: 'Cinque Terre'
+            });
+            $('#instant-forecast-place').html(imgForecast);
+        }
+
+        var indicator = data.indicator;
+        var rate = 'Rate: ' +  data.rate;
+        
+        var span = '';
+        if(indicator === utils.indicators.positive) {
+            span = $('<span />',{
+                class:'label label-info',
+                html:'Positive'
+            });
+        }
+        else if(indicator === utils.indicators.neutral){
+            span = $('<span />',{
+                class:'label label-default',
+                html:'Neutral'
+            });
+        }
+        else if(indicator === utils.indicators.negative){
+            span = $('<span />',{
+                class:'label label-danger',
+                html:'Negative'
+            });
+        }
+        else if (indicator === utils.indicators.superPositive){
+            span = $('<span />',{
+                class:'label label-success',
+                html:'Strong Positive'
+            });
+        }
+        
+        $('#instant-indicator').html(span);
+        $('#instant-rate').html(rate);
+        
+        utils.loaderHide();
+        utils.modalWindow.modal('show');
+    };
     
     var toastrConfig = function (){
         toastr.options = {
@@ -179,6 +308,7 @@ var builder = (function () {
         };
     };
     
+    
     return {
         table: table,
         imgForecast: imgForecast,
@@ -188,6 +318,11 @@ var builder = (function () {
         toastrConfig: toastrConfig,
         indicator: indicator,
         showRequestForToday: showRequestForToday,
-        wrapData: wrapData
+        wrapData: wrapData,
+        indicatorPicker: indicatorPicker,
+        toastrAlertUpdated: toastrAlertUpdated,
+        wrapForForecastElements: wrapForForecastElements,
+        reportTable: reportTable,
+        instantForecast: instantForecast
     };
 })();

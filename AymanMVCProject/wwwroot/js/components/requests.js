@@ -42,7 +42,7 @@ var requests = (function () {
         if (data){
             $.ajax({
                 url: utils.manualForecast,
-                type:'Post',
+                type:'POST',
                 data: data,
                 success: function (data) {
                     onSuccessLoad(data);
@@ -69,12 +69,11 @@ var requests = (function () {
         if(data){
             $.ajax({
                 url: utils.autoForecastPost,
-                type:'Post',
+                type:'POST',
                 data: data,
                 success: function (data) {
-                    //onSuccessLoad(data);
+                    onSuccessLoadAuto(data);
                     utils.loaderHide();
-
                 },
                 error: function (error) {
                     utils.loaderHide();
@@ -95,7 +94,7 @@ var requests = (function () {
     var requestCount = function () {
         $.ajax({
             url: utils.requestForToday,
-            type:'Get',
+            type:'GET',
             success: function (data) {
                 builder.showRequestForToday(data);
                 utils.loaderHide();
@@ -106,18 +105,68 @@ var requests = (function () {
         })
     };
     
+    var showForecastElements = function (data) {
+        $.ajax({
+            url: utils.getForecastParts,
+            type:'GET',
+            data: data,
+            success: function (data) {
+                onSuccessLoadForecastElements(data);
+                utils.loaderHide();
+            },
+            error: function (error) {
+                utils.loaderHide();
+            }
+        })
+    };
     
+    var latestAssets = function () {
+        $.ajax({
+            url: utils.getLatestAssets,
+            type:'GET',
+            success: function (data) {
+                onSuccessLoadAuto(data);
+                utils.loaderHide();
+            },
+            error: function (error) {
+                alert(error.responseJSON.message);
+                utils.loaderHide();
+            }
+        })
+        
+    };
+
+    var instantForecast = function () {
+        utils.loaderShow();
+        $.ajax({
+            url: utils.instantForecast,
+            type:'GET',
+            success: function (data) {
+                if (data){
+                    builder.instantForecast(data);
+                }
+                else{
+                    alert('No BTC data!')
+                }
+            },
+            error: function (error) {
+                utils.loaderHide();
+                alert(error.responseJSON.message);
+                
+            }
+        })
+    };
     
     var testPython = function () {
         $.ajax({
-            url: utils.domain + '/TestLink',
-            type:'Get',
+            url: utils.getForecastParts,
+            type:'GET',
             success: function (data) {
                 alert('success!');
                 utils.loaderHide();
             },
             error: function (error) {
-                alert(error.responseJSON.message);
+                alert(error.responseJSON.message + 'Requests: ' +  error.responseJSON.requestCount);
                 utils.loaderHide();
             }
         })
@@ -129,6 +178,9 @@ var requests = (function () {
         sendToServerManual: sendToServerManual,
         requestCount: requestCount,
         sendToServerAuto: sendToServerAuto,
-        testPython: testPython
+        testPython: testPython,
+        showForecastElements: showForecastElements,
+        latestAssets: latestAssets,
+        instantForecast: instantForecast
     };
 })();

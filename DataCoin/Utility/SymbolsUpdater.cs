@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using AymanMVCProject.Models;
 using DataCoin.Models;
+using DataCoin.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -21,56 +24,63 @@ namespace DataCoin.Utility
         private readonly string url;
         private readonly string key;
         private readonly IOptions<ApplicationSettings> _service;
-
+        private readonly DirectoryManager directoryManager;
         public SymbolsUpdater(IOptions<ApplicationSettings> service)
         {
             _service = service;
             fileName = _service.Value.FileName;
             url = _service.Value.CoinApiUrl;
             key = _service.Value.ApiKey;
-            currentPath = System.IO.Directory.GetCurrentDirectory();
+            currentPath = Directory.GetCurrentDirectory();
             filePath = Path.Combine(currentPath, fileName);
+            directoryManager = new DirectoryManager();
         }
         
         public void UpdateAssetsInFile()
         {
+            
             var requestString = url + "/symbols";
             var response = StaticUtility.GenerateRestUrl(requestString, key);
             
             var model = JsonConvert.DeserializeObject<List<SymbolModel>>(response.Content);
 
-            var stringToFile = GenerateString(model);
-           
+            var assetList = ReadAssets(model);
+            
+            if (!assetList.Any())
+            {
+                throw new Exception("No assets has been found");
+            }
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
             }
-            
-            File.AppendAllText(filePath, stringToFile);
+
+            directoryManager.WriteAssetsToExcel(filePath, assetList);
+            //File.AppendAllText(filePath, stringToFile);
         }
 
         
-        public List<string> ReadSymbolsFromFile()
+        public IEnumerable<string> ReadSymbolsFromFile()
         {
             if (!File.Exists(filePath)) return null;
-            
-            var readText = File.ReadAllText(filePath);
-            var strArray = readText.Split(',').ToList();
+
+            var readText = DirectoryManager.ReadAssetsFromExcel(filePath);//File.ReadAllText(filePath);
+            var strArray = readText.ToList();
             return strArray;
         }
         
-        private string GenerateString(List<SymbolModel> model)
+        private IEnumerable<string> ReadAssets(IEnumerable<SymbolModel> model)
         {
-            var onlySymbols = model.Where(x => x.AssetIdQuote == "BTC").Select(x => x.SymbolId).ToList();
-
-            var sb = new StringBuilder();
-
-            foreach (var symbol in onlySymbols)
+            var quote = _service.Value.Exchange.ToLower();
+            var quoteId = _service.Value.Currency.ToLower();
+            if (quote == "all")
             {
-                sb.Append(symbol).Append(",");
+                return model.Where(x => x.AssetIdQuote.ToLower() == quoteId).Select(x => x.SymbolId).ToList();
             }
             
-            return sb.Remove(sb.Length - 1, 1).ToString();
+            return model.Where(x => x.ExchangeId.ToLower().Contains(quote) && x.AssetIdQuote.ToLower() == quoteId).Select(x => x.SymbolId).ToList();
+            
+            
         }
     }
 }

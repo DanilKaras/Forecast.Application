@@ -2,9 +2,10 @@
 --output-path=obj/Debug/netcoreapp2.0/
 --application-name=AymanMVCProject
 --content-root=/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject
+--file=/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Views/Home/AutoForecast.cshtml
 --file=/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Views/Home/Index.cshtml
---file=/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Views/Shared/Error.cshtml
+--file=/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Views/Home/ManualForecast.cshtml
+--file=/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Views/Shared/_BTCForecast.cshtml
 --file=/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Views/Shared/_Layout.cshtml
---file=/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Views/Shared/_ValidationScriptsPartial.cshtml
 --file=/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Views/_ViewImports.cshtml
 --file=/Users/danylokaras/Forecast.Application/AymanMVCProject/AymanMVCProject/Views/_ViewStart.cshtml
